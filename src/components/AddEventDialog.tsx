@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { FamilyEvent } from "@/types/event";
 import { Plus } from "lucide-react";
+import { format } from "date-fns";
 
 interface AddEventDialogProps {
   onAddEvent: (event: Omit<FamilyEvent, "id" | "createdAt">) => void;
@@ -33,6 +34,12 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
     setDescription("");
     setDate("");
     setOpen(false);
+  };
+
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return format(date, "yyyy-MM-dd'T'HH:mm");
   };
 
   return (
@@ -74,14 +81,15 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
           </div>
           <div className="space-y-2">
             <label htmlFor="date" className="text-sm font-medium text-[#3C3C43]">
-              Date
+              Date and Time
             </label>
             <Input
               id="date"
               type="datetime-local"
-              value={date}
+              value={formatDateForInput(date)}
               onChange={(e) => setDate(e.target.value)}
               required
+              min={formatDateForInput(new Date().toISOString())}
               className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF]"
             />
           </div>
