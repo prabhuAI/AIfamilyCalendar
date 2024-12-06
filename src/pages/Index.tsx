@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { AddEventDialog } from "@/components/AddEventDialog";
-import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EventSections } from "@/components/EventSections";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Header } from "@/components/Header";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
@@ -17,36 +14,7 @@ const Index = () => {
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
-  const checkUpcomingEvents = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('check-upcoming-events');
-      if (error) throw error;
-
-      if (data.upcomingEvents && data.upcomingEvents.length > 0) {
-        data.upcomingEvents.forEach((event: any) => {
-          if (Notification.permission === "granted") {
-            new Notification(`Upcoming Event: ${event.event_name}`, {
-              body: `Starting in less than an hour: ${event.event_description || ''}`,
-              icon: '/favicon.ico'
-            });
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error checking upcoming events:', error);
-    }
-  };
-
-  useEffect(() => {
-    // Check for notifications every minute
-    const notificationInterval = setInterval(checkUpcomingEvents, 60000);
-    
-    // Initial check
-    checkUpcomingEvents();
-
-    return () => clearInterval(notificationInterval);
-  }, []);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   const handleLogout = async () => {
     try {
@@ -64,6 +32,55 @@ const Index = () => {
       });
     }
   };
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => 
+      prev.map(notif => 
+        notif.id === id ? { ...notif, read: true } : notif
+      )
+    );
+  };
+
+  useEffect(() => {
+    const checkUpcomingEvents = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('check-upcoming-events');
+        if (error) throw error;
+
+        if (data.upcomingEvents && data.upcomingEvents.length > 0) {
+          const newNotifications = data.upcomingEvents.map((event: any) => ({
+            id: event.id,
+            event_name: event.event_name,
+            event_description: event.event_description,
+            start_time: event.start_time,
+            read: false
+          }));
+
+          setNotifications(prev => {
+            const existingIds = new Set(prev.map(n => n.id));
+            const uniqueNewNotifications = newNotifications.filter(n => !existingIds.has(n.id));
+            return [...prev, ...uniqueNewNotifications];
+          });
+
+          data.upcomingEvents.forEach((event: any) => {
+            if (Notification.permission === "granted") {
+              new Notification(`Upcoming Event: ${event.event_name}`, {
+                body: `Starting in less than an hour: ${event.event_description || ''}`,
+                icon: '/favicon.ico'
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error checking upcoming events:', error);
+      }
+    };
+
+    const notificationInterval = setInterval(checkUpcomingEvents, 60000);
+    checkUpcomingEvents();
+
+    return () => clearInterval(notificationInterval);
+  }, []);
 
   useEffect(() => {
     const fetchOrCreateFamily = async () => {
@@ -190,21 +207,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
       <div className="container max-w-2xl py-8 px-4 md:px-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-semibold text-[#1C1C1E] tracking-tight">Family Calendar</h1>
-          <div className="flex gap-4 items-center">
-            {familyId && <AddEventDialog onAddEvent={addEvent} familyId={familyId} />}
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={handleLogout}
-              className="hover:bg-red-100"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
+        <Header 
+          familyId={familyId}
+          onLogout={handleLogout}
+          notifications={notifications}
+          onMarkAsRead={handleMarkAsRead}
+          onAddEvent={addEvent}
+        />
         <EventSections
           todayEvents={todayEvents}
           upcomingEvents={upcomingEvents}
