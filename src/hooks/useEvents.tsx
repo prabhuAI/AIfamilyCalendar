@@ -22,10 +22,11 @@ export const useEvents = (familyId: string | null) => {
         return [];
       }
 
-      // Fetch all events for the current user
+      // Fetch events for the current user in the specified family
       const { data, error } = await supabase
         .from('family_calendar')
-        .select('id, event_name, event_description, start_time, end_time, created_at, family_id, user_id')
+        .select('*')
+        .eq('family_id', familyId)
         .eq('user_id', user.id);
       
       if (error) {
