@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EventSections } from "@/components/EventSections";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { format } from "date-fns";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
