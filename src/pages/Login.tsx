@@ -4,6 +4,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { AuthChangeEvent } from "@supabase/supabase-js";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const Login = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event: AuthChangeEvent, session) => {
         if (event === 'SIGNED_IN') {
           navigate("/");
           toast({
@@ -35,12 +36,6 @@ const Login = () => {
           toast({
             title: "Profile Updated",
             description: "Your profile has been updated successfully.",
-          });
-        }
-        if (event === 'USER_DELETED') {
-          toast({
-            title: "Account Deleted",
-            description: "Your account has been deleted successfully.",
           });
         }
       }
