@@ -5,6 +5,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EventSections } from "@/components/EventSections";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
@@ -13,8 +16,25 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Fetch or create family ID for the current user
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchOrCreateFamily = async () => {
       try {
@@ -142,7 +162,17 @@ const Index = () => {
       <div className="container max-w-2xl py-8 px-4 md:px-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold text-[#1C1C1E] tracking-tight">Family Calendar</h1>
-          {familyId && <AddEventDialog onAddEvent={addEvent} familyId={familyId} />}
+          <div className="flex gap-4 items-center">
+            {familyId && <AddEventDialog onAddEvent={addEvent} familyId={familyId} />}
+            <Button 
+              variant="outline" 
+              size="icon"
+              onClick={handleLogout}
+              className="hover:bg-red-100"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <EventSections
