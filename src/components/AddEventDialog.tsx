@@ -143,6 +143,27 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                     date < new Date(new Date().setHours(0, 0, 0, 0))
                   }
                   initialFocus
+                  fromDate={new Date()}
+                  className="rounded-md border shadow p-3"
+                  modifiersStyles={{
+                    selected: {
+                      backgroundColor: '#007AFF',
+                      color: 'white',
+                      borderRadius: '0.375rem',
+                    },
+                    today: {
+                      backgroundColor: '#E5E5EA',
+                      borderRadius: '0.375rem',
+                    }
+                  }}
+                  styles={{
+                    day: { margin: '0.15rem' },
+                    caption: { paddingBottom: '0.5rem' },
+                    head_cell: { padding: '0.5rem 0' },
+                    table: { width: '100%', borderSpacing: '0.25rem' },
+                    cell: { padding: '0.25rem' },
+                    nav_button: { margin: '0 0.5rem' }
+                  }}
                 />
               </PopoverContent>
             </Popover>
