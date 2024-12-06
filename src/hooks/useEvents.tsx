@@ -1,77 +1,71 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { FamilyEvent } from "@/types/event";
 import { isToday, isFuture, isPast } from "date-fns";
 
+// Helper function to fetch user
+const getCurrentUser = async () => {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!user) throw new Error('No user found');
+  return user;
+};
+
+// Helper function to map database events to FamilyEvent type
+const mapDatabaseEventToFamilyEvent = (event: any): FamilyEvent => ({
+  id: event.id,
+  title: event.event_name,
+  description: event.event_description || '',
+  date: new Date(event.start_time),
+  endDate: new Date(event.end_time),
+  createdAt: new Date(event.created_at || Date.now())
+});
+
+// Helper function to fetch events from database
+const fetchEvents = async (familyId: string) => {
+  const user = await getCurrentUser();
+  
+  const { data, error } = await supabase
+    .from('family_calendar')
+    .select('*')
+    .eq('family_id', familyId)
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
+
+  return (data || []).map(mapDatabaseEventToFamilyEvent);
+};
+
+// Helper function to filter events by time
+const filterEventsByTime = (events: FamilyEvent[]) => {
+  const todayEvents = events.filter(event => isToday(event.date));
+  const upcomingEvents = events
+    .filter(event => isFuture(event.date) && !isToday(event.date))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const pastEvents = events
+    .filter(event => isPast(event.date) && !isToday(event.date))
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  return { todayEvents, upcomingEvents, pastEvents };
+};
+
 export const useEvents = (familyId: string | null) => {
   const { data: events = [], refetch } = useQuery({
     queryKey: ['events', familyId],
-    queryFn: async () => {
-      if (!familyId) {
-        console.log('No family ID provided');
-        return [];
-      }
-      
-      console.log('Fetching events for family:', familyId);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        return [];
-      }
-
-      // Fetch events for the current user in the specified family
-      const { data, error } = await supabase
-        .from('family_calendar')
-        .select('*')
-        .eq('family_id', familyId)
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error('Error fetching events:', error);
-        throw error;
-      }
-
-      console.log('Raw events data:', data);
-      
-      if (!data) {
-        console.log('No events found');
-        return [];
-      }
-
-      const mappedEvents = data.map(event => {
-        console.log('Mapping event:', event);
-        return {
-          id: event.id,
-          title: event.event_name,
-          description: event.event_description || '',
-          date: new Date(event.start_time),
-          endDate: new Date(event.end_time),
-          createdAt: new Date(event.created_at || Date.now())
-        };
-      });
-
-      console.log('Mapped events:', mappedEvents);
-      return mappedEvents;
-    },
+    queryFn: () => familyId ? fetchEvents(familyId) : Promise.resolve([]),
     enabled: !!familyId,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchInterval: 5000
   });
 
   const addEvent = async (newEvent: any) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('No user found');
-      }
-
-      if (!familyId) {
-        throw new Error('No family ID available');
-      }
-
-      console.log('Adding new event:', newEvent);
+      const user = await getCurrentUser();
+      if (!familyId) throw new Error('No family ID available');
 
       const eventData = {
         family_id: familyId,
@@ -82,8 +76,6 @@ export const useEvents = (familyId: string | null) => {
         user_id: user.id
       };
 
-      console.log('Event data to insert:', eventData);
-
       const { data, error } = await supabase
         .from('family_calendar')
         .insert([eventData])
@@ -91,8 +83,6 @@ export const useEvents = (familyId: string | null) => {
         .single();
 
       if (error) throw error;
-
-      console.log('Successfully added event:', data);
 
       refetch();
       toast({
@@ -111,16 +101,12 @@ export const useEvents = (familyId: string | null) => {
 
   const deleteEvent = async (id: string) => {
     try {
-      console.log('Deleting event:', id);
-      
       const { error } = await supabase
         .from('family_calendar')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
-
-      console.log('Successfully deleted event:', id);
 
       refetch();
       toast({
@@ -137,27 +123,7 @@ export const useEvents = (familyId: string | null) => {
     }
   };
 
-  const todayEvents = events.filter(event => {
-    const isTodays = isToday(event.date);
-    console.log(`Event ${event.title} isToday:`, isTodays);
-    return isTodays;
-  });
-
-  const upcomingEvents = events
-    .filter(event => {
-      const isFut = isFuture(event.date) && !isToday(event.date);
-      console.log(`Event ${event.title} isFuture:`, isFut);
-      return isFut;
-    })
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  const pastEvents = events
-    .filter(event => {
-      const isPst = isPast(event.date) && !isToday(event.date);
-      console.log(`Event ${event.title} isPast:`, isPst);
-      return isPst;
-    })
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+  const { todayEvents, upcomingEvents, pastEvents } = filterEventsByTime(events);
 
   return {
     events,
