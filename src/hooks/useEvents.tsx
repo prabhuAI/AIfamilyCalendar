@@ -16,16 +16,13 @@ export const useEvents = (familyId: string | null) => {
       
       console.log('Fetching events for family:', familyId);
       
-      // First, let's check if the family exists
-      const { data: familyCheck } = await supabase
-        .from('families')
-        .select('id')
-        .eq('id', familyId)
-        .single();
-        
-      console.log('Family check:', familyCheck);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        return [];
+      }
 
-      // Then fetch all events for this family
+      // Fetch all events for the current user
       const { data, error } = await supabase
         .from('family_calendar')
         .select(`
@@ -35,9 +32,10 @@ export const useEvents = (familyId: string | null) => {
           start_time,
           end_time,
           created_at,
-          family_id
+          family_id,
+          user_id
         `)
-        .eq('family_id', familyId);
+        .eq('user_id', user.id);
       
       if (error) {
         console.error('Error fetching events:', error);
@@ -67,11 +65,16 @@ export const useEvents = (familyId: string | null) => {
       return mappedEvents;
     },
     enabled: !!familyId,
-    refetchInterval: 5000 // Refresh every 5 seconds to ensure we get latest data
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
 
   const addEvent = async (newEvent: any) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('No user found');
+      }
+
       if (!familyId) {
         throw new Error('No family ID available');
       }
@@ -83,7 +86,8 @@ export const useEvents = (familyId: string | null) => {
         event_name: newEvent.title,
         event_description: newEvent.description || '',
         start_time: newEvent.date.toISOString(),
-        end_time: newEvent.endDate?.toISOString() || newEvent.date.toISOString()
+        end_time: newEvent.endDate?.toISOString() || newEvent.date.toISOString(),
+        user_id: user.id
       };
 
       console.log('Event data to insert:', eventData);
