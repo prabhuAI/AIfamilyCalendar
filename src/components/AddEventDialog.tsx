@@ -122,15 +122,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                 required
                 showPopperArrow={false}
                 popperClassName="react-datepicker-popper"
-                popperModifiers={[
-                  {
-                    name: "offset",
-                    options: {
-                      offset: [0, 8]
-                    }
-                  }
-                ]}
-                calendarClassName="!bg-white !border-[#C7C7CC] !rounded-lg !shadow-lg !p-4"
+                popperPlacement="bottom-start"
               />
             </div>
           </div>
