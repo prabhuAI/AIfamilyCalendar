@@ -1,21 +1,20 @@
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { EventSections } from "@/components/EventSections";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
-import { format, isToday, isFuture, isPast } from "date-fns";
+import { EventSections } from "@/components/EventSections";
+import { useFamily } from "@/hooks/useFamily";
+import { useEvents } from "@/hooks/useEvents";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
   const [isPastOpen, setIsPastOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [familyId, setFamilyId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { familyId, isLoading } = useFamily();
+  const { todayEvents, upcomingEvents, pastEvents, addEvent, deleteEvent } = useEvents(familyId);
 
   const handleLogout = async () => {
     try {
@@ -41,118 +40,6 @@ const Index = () => {
       )
     );
   };
-
-  useEffect(() => {
-    const fetchOrCreateFamily = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: familyMember } = await supabase
-          .from('family_members')
-          .select('family_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (familyMember) {
-          setFamilyId(familyMember.family_id);
-        } else {
-          const { data: newFamily, error: familyError } = await supabase
-            .from('families')
-            .insert([{ family_name: 'My Family' }])
-            .select()
-            .single();
-
-          if (familyError) throw familyError;
-
-          if (newFamily) {
-            const { error: membershipError } = await supabase
-              .from('family_members')
-              .insert([{ 
-                family_id: newFamily.id, 
-                user_id: user.id 
-              }]);
-
-            if (membershipError) throw membershipError;
-            setFamilyId(newFamily.id);
-          }
-        }
-      } catch (error: any) {
-        console.error('Error in fetchOrCreateFamily:', error);
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchOrCreateFamily();
-  }, [toast]);
-
-  const { data: events = [] } = useQuery({
-    queryKey: ['events', familyId],
-    queryFn: async () => {
-      if (!familyId) return [];
-      const { data, error } = await supabase
-        .from('family_calendar')
-        .select('*')
-        .eq('family_id', familyId);
-      
-      if (error) throw error;
-      return data.map(event => ({
-        id: event.id,
-        title: event.event_name,
-        description: event.event_description,
-        date: new Date(event.start_time),
-        createdAt: new Date(event.created_at)
-      }));
-    },
-    enabled: !!familyId
-  });
-
-  const addEvent = async (newEvent: any) => {
-    queryClient.invalidateQueries({ queryKey: ['events'] });
-    toast({
-      title: "Event added",
-      description: "Your event has been successfully added to the calendar.",
-    });
-  };
-
-  const deleteEvent = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('family_calendar')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast({
-        title: "Event deleted",
-        description: "Your event has been successfully removed from the calendar.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const todayEvents = events.filter(event => isToday(event.date));
-
-  const upcomingEvents = events
-    .filter(event => isFuture(event.date) && !isToday(event.date))
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
-
-  const pastEvents = events
-    .filter(event => isPast(event.date) && !isToday(event.date))
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   if (isLoading) {
     return (
