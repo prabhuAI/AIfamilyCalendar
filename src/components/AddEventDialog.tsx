@@ -134,9 +134,14 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                   mode="single"
                   selected={date}
                   onSelect={(newDate) => {
-                    setDate(newDate);
-                    setCalendarOpen(false);
+                    if (newDate) {
+                      setDate(newDate);
+                      setCalendarOpen(false);
+                    }
                   }}
+                  disabled={(date) =>
+                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                  }
                   initialFocus
                 />
               </PopoverContent>
