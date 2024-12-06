@@ -32,6 +32,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>();
   const [open, setOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,7 +116,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
             <label className="text-sm font-medium text-[#3C3C43]">
               Date and Time
             </label>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant={"outline"}
@@ -132,11 +133,11 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(newDate) => {
+                    setDate(newDate);
+                    setCalendarOpen(false);
+                  }}
                   initialFocus
-                  disabled={(date) =>
-                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                  }
                 />
               </PopoverContent>
             </Popover>
