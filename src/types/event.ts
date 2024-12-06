@@ -3,5 +3,6 @@ export interface FamilyEvent {
   title: string;
   description: string;
   date: Date;
+  endDate: Date;
   createdAt: Date;
 }
