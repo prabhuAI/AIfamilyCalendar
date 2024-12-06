@@ -1,1 +1,3 @@
 project_id = "wnzkhqdgvwutxdqyzdiu"
+[functions.check-upcoming-events]
+verify_jwt = false

@@ -18,6 +18,36 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  const checkUpcomingEvents = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-upcoming-events');
+      if (error) throw error;
+
+      if (data.upcomingEvents && data.upcomingEvents.length > 0) {
+        data.upcomingEvents.forEach((event: any) => {
+          if (Notification.permission === "granted") {
+            new Notification(`Upcoming Event: ${event.event_name}`, {
+              body: `Starting in less than an hour: ${event.event_description || ''}`,
+              icon: '/favicon.ico'
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error checking upcoming events:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Check for notifications every minute
+    const notificationInterval = setInterval(checkUpcomingEvents, 60000);
+    
+    // Initial check
+    checkUpcomingEvents();
+
+    return () => clearInterval(notificationInterval);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
