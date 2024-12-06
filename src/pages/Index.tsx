@@ -14,40 +14,63 @@ const Index = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [familyId, setFamilyId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch family ID for the current user
+  // Fetch or create family ID for the current user
   useEffect(() => {
-    const fetchFamilyId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: familyMember } = await supabase
+    const fetchOrCreateFamily = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Try to get existing family membership
+        const { data: familyMember, error: memberError } = await supabase
           .from('family_members')
           .select('family_id')
           .eq('user_id', user.id)
-          .single();
-        
+          .maybeSingle(); // Use maybeSingle() instead of single()
+
         if (familyMember) {
           setFamilyId(familyMember.family_id);
         } else {
-          // Create a new family if user doesn't have one
-          const { data: newFamily } = await supabase
+          // Create new family if user doesn't have one
+          console.log("Creating new family for user:", user.id);
+          const { data: newFamily, error: familyError } = await supabase
             .from('families')
             .insert([{ family_name: 'My Family' }])
             .select()
             .single();
 
+          if (familyError) throw familyError;
+
           if (newFamily) {
-            await supabase
+            console.log("Created new family:", newFamily.id);
+            // Create family membership
+            const { error: membershipError } = await supabase
               .from('family_members')
-              .insert([{ family_id: newFamily.id, user_id: user.id }]);
+              .insert([{ 
+                family_id: newFamily.id, 
+                user_id: user.id 
+              }]);
+
+            if (membershipError) throw membershipError;
             setFamilyId(newFamily.id);
           }
         }
+      } catch (error: any) {
+        console.error('Error in fetchOrCreateFamily:', error);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchFamilyId();
-  }, []);
+    fetchOrCreateFamily();
+  }, [toast]);
 
   // Fetch events query
   const { data: events = [] } = useQuery({
@@ -114,8 +137,12 @@ const Index = () => {
     .filter((event) => new Date(event.date) < new Date())
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  if (!familyId) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center">
+        <div className="text-[#1C1C1E]">Loading...</div>
+      </div>
+    );
   }
 
   return (
