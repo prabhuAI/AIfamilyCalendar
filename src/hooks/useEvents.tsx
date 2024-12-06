@@ -79,7 +79,7 @@ export const useEvents = (familyId: string | null) => {
         event_description: newEvent.description || '',
         start_time: newEvent.date.toISOString(),
         end_time: newEvent.endDate?.toISOString() || newEvent.date.toISOString(),
-        user_id: user.id // Make sure to set the user_id
+        user_id: user.id
       };
 
       console.log('Event data to insert:', eventData);
