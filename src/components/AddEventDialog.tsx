@@ -39,7 +39,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
             event_name: title,
             event_description: description,
             start_time: date.toISOString(),
-            end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+            end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(),
             family_id: familyId
           }
         ])
@@ -70,18 +70,18 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full px-4 w-full md:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button className="bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#6B7280] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-2xl px-6 py-3 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]">
+          <Plus className="h-5 w-5 mr-2" />
           Add Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95%] max-w-[425px] rounded-2xl bg-[#F2F2F7]/95 backdrop-blur-sm p-4 md:p-6">
+      <DialogContent className="w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] border-none p-6">
         <DialogHeader>
-          <DialogTitle className="text-[#1C1C1E] text-xl font-semibold">Add New Event</DialogTitle>
+          <DialogTitle className="text-[#374151] text-xl font-semibold">New Event</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium text-[#3C3C43]">
+            <label htmlFor="title" className="text-sm font-medium text-[#4B5563]">
               Title
             </label>
             <Input
@@ -89,11 +89,11 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF]"
+              className="rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium text-[#3C3C43]">
+            <label htmlFor="description" className="text-sm font-medium text-[#4B5563]">
               Description
             </label>
             <Textarea
@@ -101,11 +101,11 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF] min-h-[100px]"
+              className="rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] min-h-[100px] transition-all duration-200"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#3C3C43]">
+            <label className="text-sm font-medium text-[#4B5563]">
               Date and Time
             </label>
             <div className="relative">
@@ -118,7 +118,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                 dateFormat="MMMM d, yyyy h:mm aa"
                 minDate={new Date()}
                 placeholderText="Select date and time"
-                className="w-full rounded-lg border border-[#C7C7CC] p-2 focus:border-[#007AFF] focus:ring-[#007AFF]"
+                className="w-full rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] p-3 focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
                 required
                 showPopperArrow={false}
                 popperClassName="react-datepicker-popper"
@@ -128,7 +128,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
           </div>
           <Button
             type="submit"
-            className="w-full bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full py-2 mt-4"
+            className="w-full bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#374151] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-xl py-3 mt-6 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]"
             disabled={!date}
           >
             Add Event
