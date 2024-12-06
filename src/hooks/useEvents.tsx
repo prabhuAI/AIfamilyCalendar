@@ -10,18 +10,28 @@ export const useEvents = (familyId: string | null) => {
     queryKey: ['events', familyId],
     queryFn: async () => {
       if (!familyId) return [];
+      
+      console.log('Fetching events for family:', familyId);
+      
       const { data, error } = await supabase
         .from('family_calendar')
         .select('*')
         .eq('family_id', familyId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+
+      console.log('Raw events data:', data);
+      
       return data.map(event => ({
         id: event.id,
         title: event.event_name,
-        description: event.event_description,
+        description: event.event_description || '',
         date: new Date(event.start_time),
-        createdAt: new Date(event.created_at)
+        endDate: new Date(event.end_time),
+        createdAt: new Date(event.created_at || Date.now())
       }));
     },
     enabled: !!familyId
@@ -29,17 +39,31 @@ export const useEvents = (familyId: string | null) => {
 
   const addEvent = async (newEvent: any) => {
     try {
-      const { error } = await supabase
+      if (!familyId) {
+        throw new Error('No family ID available');
+      }
+
+      console.log('Adding new event:', newEvent);
+
+      const eventData = {
+        family_id: familyId,
+        event_name: newEvent.title,
+        event_description: newEvent.description || '',
+        start_time: newEvent.date.toISOString(),
+        end_time: newEvent.endDate?.toISOString() || newEvent.date.toISOString()
+      };
+
+      console.log('Event data to insert:', eventData);
+
+      const { data, error } = await supabase
         .from('family_calendar')
-        .insert([{
-          family_id: familyId,
-          event_name: newEvent.title,
-          event_description: newEvent.description,
-          start_time: newEvent.date,
-          end_time: newEvent.date // For now, end time is same as start time
-        }]);
+        .insert([eventData])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      console.log('Successfully added event:', data);
 
       refetch();
       toast({
@@ -47,6 +71,7 @@ export const useEvents = (familyId: string | null) => {
         description: "Your event has been successfully added to the calendar.",
       });
     } catch (error: any) {
+      console.error('Error adding event:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -57,6 +82,8 @@ export const useEvents = (familyId: string | null) => {
 
   const deleteEvent = async (id: string) => {
     try {
+      console.log('Deleting event:', id);
+      
       const { error } = await supabase
         .from('family_calendar')
         .delete()
@@ -64,12 +91,15 @@ export const useEvents = (familyId: string | null) => {
 
       if (error) throw error;
 
+      console.log('Successfully deleted event:', id);
+
       refetch();
       toast({
         title: "Event deleted",
         description: "Your event has been successfully removed from the calendar.",
       });
     } catch (error: any) {
+      console.error('Error deleting event:', error);
       toast({
         title: "Error",
         description: error.message,
