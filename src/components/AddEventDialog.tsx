@@ -70,16 +70,16 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full px-4">
+        <Button className="bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full px-4 w-full md:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Add Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-2xl bg-[#F2F2F7]/95 backdrop-blur-sm">
+      <DialogContent className="w-[95%] max-w-[425px] rounded-2xl bg-[#F2F2F7]/95 backdrop-blur-sm p-4 md:p-6">
         <DialogHeader>
           <DialogTitle className="text-[#1C1C1E] text-xl font-semibold">Add New Event</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <label htmlFor="title" className="text-sm font-medium text-[#3C3C43]">
               Title
@@ -101,7 +101,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF]"
+              className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF] min-h-[100px]"
             />
           </div>
           <div className="space-y-2">
@@ -120,12 +120,23 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
                 placeholderText="Select date and time"
                 className="w-full rounded-lg border border-[#C7C7CC] p-2 focus:border-[#007AFF] focus:ring-[#007AFF]"
                 required
+                showPopperArrow={false}
+                popperClassName="react-datepicker-popper"
+                popperModifiers={[
+                  {
+                    name: "offset",
+                    options: {
+                      offset: [0, 8]
+                    }
+                  }
+                ]}
+                calendarClassName="!bg-white !border-[#C7C7CC] !rounded-lg !shadow-lg !p-4"
               />
             </div>
           </div>
           <Button
             type="submit"
-            className="w-full bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full"
+            className="w-full bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full py-2 mt-4"
             disabled={!date}
           >
             Add Event
