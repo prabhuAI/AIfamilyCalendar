@@ -9,13 +9,34 @@ export const useEvents = (familyId: string | null) => {
   const { data: events = [], refetch } = useQuery({
     queryKey: ['events', familyId],
     queryFn: async () => {
-      if (!familyId) return [];
+      if (!familyId) {
+        console.log('No family ID provided');
+        return [];
+      }
       
       console.log('Fetching events for family:', familyId);
       
+      // First, let's check if the family exists
+      const { data: familyCheck } = await supabase
+        .from('families')
+        .select('id')
+        .eq('id', familyId)
+        .single();
+        
+      console.log('Family check:', familyCheck);
+
+      // Then fetch all events for this family
       const { data, error } = await supabase
         .from('family_calendar')
-        .select('*')
+        .select(`
+          id,
+          event_name,
+          event_description,
+          start_time,
+          end_time,
+          created_at,
+          family_id
+        `)
         .eq('family_id', familyId);
       
       if (error) {
@@ -25,16 +46,28 @@ export const useEvents = (familyId: string | null) => {
 
       console.log('Raw events data:', data);
       
-      return data.map(event => ({
-        id: event.id,
-        title: event.event_name,
-        description: event.event_description || '',
-        date: new Date(event.start_time),
-        endDate: new Date(event.end_time),
-        createdAt: new Date(event.created_at || Date.now())
-      }));
+      if (!data) {
+        console.log('No events found');
+        return [];
+      }
+
+      const mappedEvents = data.map(event => {
+        console.log('Mapping event:', event);
+        return {
+          id: event.id,
+          title: event.event_name,
+          description: event.event_description || '',
+          date: new Date(event.start_time),
+          endDate: new Date(event.end_time),
+          createdAt: new Date(event.created_at || Date.now())
+        };
+      });
+
+      console.log('Mapped events:', mappedEvents);
+      return mappedEvents;
     },
-    enabled: !!familyId
+    enabled: !!familyId,
+    refetchInterval: 5000 // Refresh every 5 seconds to ensure we get latest data
   });
 
   const addEvent = async (newEvent: any) => {
@@ -108,14 +141,26 @@ export const useEvents = (familyId: string | null) => {
     }
   };
 
-  const todayEvents = events.filter(event => isToday(event.date));
+  const todayEvents = events.filter(event => {
+    const isTodays = isToday(event.date);
+    console.log(`Event ${event.title} isToday:`, isTodays);
+    return isTodays;
+  });
 
   const upcomingEvents = events
-    .filter(event => isFuture(event.date) && !isToday(event.date))
+    .filter(event => {
+      const isFut = isFuture(event.date) && !isToday(event.date);
+      console.log(`Event ${event.title} isFuture:`, isFut);
+      return isFut;
+    })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const pastEvents = events
-    .filter(event => isPast(event.date) && !isToday(event.date))
+    .filter(event => {
+      const isPst = isPast(event.date) && !isToday(event.date);
+      console.log(`Event ${event.title} isPast:`, isPst);
+      return isPst;
+    })
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   return {
