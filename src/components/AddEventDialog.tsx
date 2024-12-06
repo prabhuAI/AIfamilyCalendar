@@ -12,6 +12,14 @@ import { useState } from "react";
 import { FamilyEvent } from "@/types/event";
 import { Plus } from "lucide-react";
 import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
 
 interface AddEventDialogProps {
   onAddEvent: (event: Omit<FamilyEvent, "id" | "createdAt">) => void;
@@ -20,26 +28,22 @@ interface AddEventDialogProps {
 export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState<Date>();
   const [open, setOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!date) return;
+    
     onAddEvent({
       title,
       description,
-      date: new Date(date),
+      date,
     });
     setTitle("");
     setDescription("");
-    setDate("");
+    setDate(undefined);
     setOpen(false);
-  };
-
-  const formatDateForInput = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return format(date, "yyyy-MM-dd'T'HH:mm");
   };
 
   return (
@@ -80,22 +84,39 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="date" className="text-sm font-medium text-[#3C3C43]">
+            <label className="text-sm font-medium text-[#3C3C43]">
               Date and Time
             </label>
-            <Input
-              id="date"
-              type="datetime-local"
-              value={formatDateForInput(date)}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              min={formatDateForInput(new Date().toISOString())}
-              className="rounded-lg border-[#C7C7CC] focus:border-[#007AFF] focus:ring-[#007AFF]"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                  disabled={(date) =>
+                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                  }
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <Button
             type="submit"
             className="w-full bg-[#007AFF] hover:bg-[#007AFF]/90 text-white rounded-full"
+            disabled={!date}
           >
             Add Event
           </Button>
