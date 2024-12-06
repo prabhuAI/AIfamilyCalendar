@@ -68,37 +68,11 @@ const Login = () => {
               input: 'auth-input',
             },
           }}
-          providers={["google"]}
+          providers={[]}
           redirectTo={`${window.location.origin}/`}
           onlyThirdPartyProviders={false}
           view="sign_in"
           showLinks={true}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Email',
-                password_label: 'Password',
-                button_label: 'Sign In',
-                loading_button_label: 'Signing in...',
-                social_provider_text: 'Sign in with {{provider}}',
-                link_text: "Already have an account? Sign in",
-              },
-              sign_up: {
-                email_label: 'Email',
-                password_label: 'Password',
-                button_label: 'Sign Up',
-                loading_button_label: 'Signing up...',
-                social_provider_text: 'Sign up with {{provider}}',
-                link_text: "Don't have an account? Sign up",
-              },
-              forgotten_password: {
-                email_label: 'Email',
-                button_label: 'Send Reset Instructions',
-                loading_button_label: 'Sending reset instructions...',
-                link_text: 'Forgot your password?',
-              },
-            },
-          }}
         />
       </div>
     </div>

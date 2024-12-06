@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { FamilyEvent } from "@/types/event";
 import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,30 +19,59 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddEventDialogProps {
-  onAddEvent: (event: Omit<FamilyEvent, "id" | "createdAt">) => void;
+  onAddEvent: (event: any) => void;
+  familyId: string;
 }
 
-export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
+export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>();
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!date) return;
     
-    onAddEvent({
-      title,
-      description,
-      date,
-    });
-    setTitle("");
-    setDescription("");
-    setDate(undefined);
-    setOpen(false);
+    try {
+      const { data, error } = await supabase
+        .from('family_calendar')
+        .insert([
+          {
+            event_name: title,
+            event_description: description,
+            start_time: date.toISOString(),
+            end_time: new Date(date.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+            family_id: familyId
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      onAddEvent(data);
+      setTitle("");
+      setDescription("");
+      setDate(undefined);
+      setOpen(false);
+
+      toast({
+        title: "Success",
+        description: "Event added successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
