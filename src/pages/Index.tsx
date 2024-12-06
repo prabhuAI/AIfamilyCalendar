@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EventSections } from "@/components/EventSections";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-import { format } from "date-fns";
+import { format, isToday, isFuture, isPast } from "date-fns";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
@@ -41,47 +41,6 @@ const Index = () => {
       )
     );
   };
-
-  useEffect(() => {
-    const checkUpcomingEvents = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('check-upcoming-events');
-        if (error) throw error;
-
-        if (data.upcomingEvents && data.upcomingEvents.length > 0) {
-          const newNotifications = data.upcomingEvents.map((event: any) => ({
-            id: event.id,
-            event_name: event.event_name,
-            event_description: event.event_description,
-            start_time: event.start_time,
-            read: false
-          }));
-
-          setNotifications(prev => {
-            const existingIds = new Set(prev.map(n => n.id));
-            const uniqueNewNotifications = newNotifications.filter(n => !existingIds.has(n.id));
-            return [...prev, ...uniqueNewNotifications];
-          });
-
-          data.upcomingEvents.forEach((event: any) => {
-            if (Notification.permission === "granted") {
-              new Notification(`Upcoming Event: ${event.event_name}`, {
-                body: `Starting in less than an hour: ${event.event_description || ''}`,
-                icon: '/favicon.ico'
-              });
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Error checking upcoming events:', error);
-      }
-    };
-
-    const notificationInterval = setInterval(checkUpcomingEvents, 60000);
-    checkUpcomingEvents();
-
-    return () => clearInterval(notificationInterval);
-  }, []);
 
   useEffect(() => {
     const fetchOrCreateFamily = async () => {
@@ -185,17 +144,15 @@ const Index = () => {
     }
   };
 
-  const todayEvents = events.filter(
-    (event) => format(new Date(event.date), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
-  );
+  const todayEvents = events.filter(event => isToday(event.date));
 
   const upcomingEvents = events
-    .filter((event) => new Date(event.date) > new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .filter(event => isFuture(event.date) && !isToday(event.date))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const pastEvents = events
-    .filter((event) => new Date(event.date) < new Date())
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .filter(event => isPast(event.date) && !isToday(event.date))
+    .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   if (isLoading) {
     return (
