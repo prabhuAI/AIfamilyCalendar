@@ -10,15 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -30,9 +23,8 @@ interface AddEventDialogProps {
 export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +51,7 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
       onAddEvent(data);
       setTitle("");
       setDescription("");
-      setDate(undefined);
+      setDate(null);
       setOpen(false);
 
       toast({
@@ -116,57 +108,20 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
             <label className="text-sm font-medium text-[#3C3C43]">
               Date and Time
             </label>
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(newDate) => {
-                    if (newDate) {
-                      setDate(newDate);
-                      setCalendarOpen(false);
-                    }
-                  }}
-                  disabled={(date) =>
-                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                  }
-                  initialFocus
-                  fromDate={new Date()}
-                  className="rounded-md border shadow p-3"
-                  modifiersStyles={{
-                    selected: {
-                      backgroundColor: '#007AFF',
-                      color: 'white',
-                      borderRadius: '0.375rem',
-                    },
-                    today: {
-                      backgroundColor: '#E5E5EA',
-                      borderRadius: '0.375rem',
-                    }
-                  }}
-                  styles={{
-                    day: { margin: '0.15rem' },
-                    caption: { paddingBottom: '0.5rem' },
-                    head_cell: { padding: '0.5rem 0' },
-                    table: { width: '100%', borderSpacing: '0.25rem' },
-                    cell: { padding: '0.25rem' },
-                    nav_button: { margin: '0 0.5rem' }
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
+            <div className="relative">
+              <DatePicker
+                selected={date}
+                onChange={(date: Date) => setDate(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="MMMM d, yyyy h:mm aa"
+                minDate={new Date()}
+                placeholderText="Select date and time"
+                className="w-full rounded-lg border border-[#C7C7CC] p-2 focus:border-[#007AFF] focus:ring-[#007AFF]"
+                required
+              />
+            </div>
           </div>
           <Button
             type="submit"
