@@ -10,10 +10,34 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const requestNotificationPermission = async () => {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        const { error } = await supabase
+          .from('notification_preferences')
+          .upsert({ 
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            browser_notifications: true 
+          });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Notifications enabled",
+          description: "You will receive notifications for upcoming events.",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error setting up notifications:', error);
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event: AuthChangeEvent, session) => {
+      async (event: AuthChangeEvent, session) => {
         if (event === 'SIGNED_IN') {
+          await requestNotificationPermission();
           navigate("/");
           toast({
             title: "Welcome!",
@@ -24,18 +48,6 @@ const Login = () => {
           toast({
             title: "Signed out",
             description: "You have been signed out successfully.",
-          });
-        }
-        if (event === 'PASSWORD_RECOVERY') {
-          toast({
-            title: "Password Recovery",
-            description: "Check your email for the password reset link.",
-          });
-        }
-        if (event === 'USER_UPDATED') {
-          toast({
-            title: "Profile Updated",
-            description: "Your profile has been updated successfully.",
           });
         }
       }

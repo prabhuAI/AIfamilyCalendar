@@ -94,6 +94,27 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          browser_notifications: boolean | null
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          browser_notifications?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          browser_notifications?: boolean | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
