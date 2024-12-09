@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { User } from '@supabase/supabase-js';
 
 export const useFamilyData = () => {
   const { toast } = useToast();
@@ -17,12 +16,13 @@ export const useFamilyData = () => {
       const { data: familyMembers, error: memberError } = await supabase
         .from('family_members')
         .select('family_id')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .maybeSingle(); // Use maybeSingle() instead of single() to handle no results
 
       if (memberError) throw memberError;
 
       // If user has no family, create one
-      if (!familyMembers || familyMembers.length === 0) {
+      if (!familyMembers) {
         console.log("No family found, creating new family");
         
         // First create the family
@@ -55,7 +55,7 @@ export const useFamilyData = () => {
         return { familyId: newFamily.id, members: [] };
       }
 
-      const familyId = familyMembers[0].family_id;
+      const familyId = familyMembers.family_id;
 
       // Get all members of the family
       const { data: members, error: membersError } = await supabase
