@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FamilyEvent } from "@/types/event";
-import { Trash2, Clock } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { EventDateTime } from "./EventDateTime";
 
 interface EventCardProps {
