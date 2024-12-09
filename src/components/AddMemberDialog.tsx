@@ -13,7 +13,6 @@ interface AddMemberDialogProps {
 }
 
 export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
-  const [fullName, setFullName] = useState("");
   const [nickname, setNickname] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -65,8 +64,8 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         .from('profiles')
         .insert({
           id: newProfileId,
-          full_name: fullName,
-          nickname: nickname || fullName.substring(0, Math.min(fullName.length, 6))
+          full_name: nickname,
+          nickname: nickname
         });
 
       if (profileError) {
@@ -92,7 +91,6 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         description: "Family member added successfully",
       });
       onOpenChange(false);
-      setFullName("");
       setNickname("");
     } catch (error: any) {
       console.error('Error adding family member:', error);
@@ -114,24 +112,14 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name (max 12 characters)</Label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter member's full name"
-              maxLength={12}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="nickname">Nickname (optional, max 6 characters)</Label>
+            <Label htmlFor="nickname">Nickname (max 6 characters)</Label>
             <Input
               id="nickname"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="Enter nickname"
               maxLength={6}
+              required
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
