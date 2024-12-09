@@ -5,7 +5,6 @@ import {
   getCurrentUser,
   getFamilyMember,
   createNewFamily,
-  createFamilyMember,
   getFamilyMembers,
 } from "@/utils/familyUtils";
 
@@ -21,7 +20,12 @@ export const useFamilyData = () => {
         const user = await getCurrentUser();
         
         // Get user's family membership
-        const { familyMembers } = await getFamilyMember(user.id);
+        const { familyMembers, error } = await getFamilyMember(user.id);
+        
+        if (error) {
+          console.error('Error fetching family member:', error);
+          return { familyId: null, members: [] };
+        }
 
         // If user has no family, create one
         if (!familyMembers || familyMembers.length === 0) {
@@ -53,7 +57,9 @@ export const useFamilyData = () => {
       }
     },
     retry: 1,
-    retryDelay: 1000
+    retryDelay: 1000,
+    // Add this to prevent uncaught errors
+    throwOnError: false
   });
 
   const removeMember = useMutation({
