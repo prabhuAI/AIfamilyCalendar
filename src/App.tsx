@@ -12,6 +12,7 @@ import Groceries from "./pages/Groceries";
 import Todos from "./pages/Todos";
 import PaymentReminders from "./pages/PaymentReminders";
 import { useEffect, useState } from "react";
+import { useToast } from "./components/ui/use-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,23 +28,50 @@ const queryClient = new QueryClient({
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          throw error;
+        }
+
         if (!currentSession) {
           console.log("No active session found in ProtectedRoute");
+          navigate('/login');
         }
       } catch (error) {
         console.error("Error checking auth:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
+        navigate('/login');
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        navigate("/login");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   if (isLoading) {
     return null;
@@ -58,21 +86,42 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   const [initialized, setInitialized] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session initialization error:", error);
+          throw error;
+        }
+        
         console.log("Initial session state:", session ? "Session exists" : "No session");
+        
+        // Refresh session if it exists
+        if (session) {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error("Session refresh error:", refreshError);
+            throw refreshError;
+          }
+        }
       } catch (error) {
         console.error("Error initializing auth:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Please try signing in again",
+          variant: "destructive",
+        });
       } finally {
         setInitialized(true);
       }
     };
 
     initializeAuth();
-  }, []);
+  }, [toast]);
 
   if (!initialized) {
     return null;
