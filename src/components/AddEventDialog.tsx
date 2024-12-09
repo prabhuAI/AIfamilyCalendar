@@ -12,15 +12,13 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AddEventDialogProps {
   onAddEvent: (event: any) => void;
-  familyId: string;
 }
 
-export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
+export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | null>(null);
@@ -39,33 +37,18 @@ export function AddEventDialog({ onAddEvent, familyId }: AddEventDialogProps) {
         eventDateTime.setHours(parseInt(hours), parseInt(minutes));
       }
 
-      const { data, error } = await supabase
-        .from('family_calendar')
-        .insert([
-          {
-            event_name: title,
-            event_description: description,
-            start_time: eventDateTime.toISOString(),
-            end_time: new Date(eventDateTime.getTime() + 60 * 60 * 1000).toISOString(),
-            family_id: familyId
-          }
-        ])
-        .select()
-        .single();
+      await onAddEvent({
+        title,
+        description,
+        date: eventDateTime,
+        endDate: new Date(eventDateTime.getTime() + 60 * 60 * 1000), // 1 hour duration
+      });
 
-      if (error) throw error;
-
-      onAddEvent(data);
       setTitle("");
       setDescription("");
       setDate(null);
       setTime("");
       setOpen(false);
-
-      toast({
-        title: "Success",
-        description: "Event added successfully",
-      });
     } catch (error: any) {
       toast({
         title: "Error",

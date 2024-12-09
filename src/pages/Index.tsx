@@ -4,17 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
 import { EventSections } from "@/components/EventSections";
-import { useFamily } from "@/hooks/useFamily";
 import { useEvents } from "@/hooks/useEvents";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const Index = () => {
   const [isUpcomingOpen, setIsUpcomingOpen] = useState(false);
   const [isPastOpen, setIsPastOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { familyId, isLoading } = useFamily();
-  const { todayEvents, upcomingEvents, pastEvents, addEvent, deleteEvent } = useEvents(familyId);
+  const { todayEvents, upcomingEvents, pastEvents, addEvent, deleteEvent } = useEvents();
+  const { notifications, markAsRead } = useNotifications();
 
   const handleLogout = async () => {
     try {
@@ -34,26 +33,13 @@ const Index = () => {
   };
 
   const handleMarkAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+    markAsRead.mutate(id);
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center">
-        <div className="text-[#1C1C1E]">Loading...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
       <div className="container max-w-2xl py-8 px-4 md:px-8">
         <Header 
-          familyId={familyId}
           onLogout={handleLogout}
           notifications={notifications}
           onMarkAsRead={handleMarkAsRead}

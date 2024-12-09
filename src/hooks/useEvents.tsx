@@ -20,11 +20,11 @@ const mapDatabaseEventToFamilyEvent = (event: any): FamilyEvent => ({
   description: event.event_description || '',
   date: new Date(event.start_time),
   endDate: new Date(event.end_time),
-  createdAt: new Date(event.created_at || Date.now())
+  createdAt: new Date(event.created_at)
 });
 
 // Helper function to fetch events from database
-const fetchEvents = async (familyId: string) => {
+const fetchEvents = async () => {
   console.log('Starting fetchEvents...');
   const user = await getCurrentUser();
   console.log('Current user:', user.id);
@@ -32,7 +32,6 @@ const fetchEvents = async (familyId: string) => {
   const { data, error } = await supabase
     .from('family_calendar')
     .select('*')
-    .eq('family_id', familyId)
     .eq('user_id', user.id);
 
   if (error) {
@@ -57,26 +56,23 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
   return { todayEvents, upcomingEvents, pastEvents };
 };
 
-export const useEvents = (familyId: string | null) => {
+export const useEvents = () => {
   const { data: events = [], refetch } = useQuery({
-    queryKey: ['events', familyId],
-    queryFn: () => familyId ? fetchEvents(familyId) : Promise.resolve([]),
-    enabled: !!familyId,
+    queryKey: ['events'],
+    queryFn: () => fetchEvents(),
     refetchInterval: 5000
   });
 
   const addEvent = async (newEvent: any) => {
     try {
       const user = await getCurrentUser();
-      if (!familyId) throw new Error('No family ID available');
 
       const eventData = {
-        family_id: familyId,
+        user_id: user.id,
         event_name: newEvent.title,
         event_description: newEvent.description || '',
         start_time: newEvent.date.toISOString(),
         end_time: newEvent.endDate?.toISOString() || newEvent.date.toISOString(),
-        user_id: user.id
       };
 
       console.log('Adding event with data:', eventData);
