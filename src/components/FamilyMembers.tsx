@@ -34,23 +34,33 @@ export function FamilyMembers() {
 
       // If user has no family, create one
       if (!familyMembers || familyMembers.length === 0) {
+        // First create the family
         const { data: newFamily, error: familyError } = await supabase
           .from('families')
-          .insert([{ family_name: 'My Family' }])
+          .insert([{ 
+            family_name: 'My Family',
+          }])
           .select()
           .single();
 
         if (familyError) throw familyError;
 
-        await supabase
+        // Then create the family member entry for the current user
+        const { error: memberInsertError } = await supabase
           .from('family_members')
-          .insert([{ family_id: newFamily.id, user_id: user.id }]);
+          .insert([{ 
+            family_id: newFamily.id, 
+            user_id: user.id 
+          }]);
+
+        if (memberInsertError) throw memberInsertError;
 
         return { familyId: newFamily.id, members: [] };
       }
 
       const familyId = familyMembers[0].family_id;
 
+      // Get all members of the family
       const { data: members, error: membersError } = await supabase
         .from('family_members')
         .select(`
