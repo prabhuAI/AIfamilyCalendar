@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { FamilyEvent } from "@/types/event";
-import { isToday, isFuture, isPast } from "date-fns";
+import { isToday, isFuture, isPast, startOfDay } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 
 type Event = Database['public']['Tables']['family_calendar']['Row'];
@@ -48,12 +48,26 @@ const fetchEvents = async () => {
 
 // Helper function to filter events by time
 const filterEventsByTime = (events: FamilyEvent[]) => {
-  const todayEvents = events.filter(event => isToday(event.date));
+  const now = new Date();
+  const todayStart = startOfDay(now);
+
+  const todayEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    return isToday(eventDate);
+  });
+
   const upcomingEvents = events
-    .filter(event => isFuture(event.date) && !isToday(event.date))
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      return isFuture(eventDate) && !isToday(eventDate);
+    })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
+
   const pastEvents = events
-    .filter(event => isPast(event.date) && !isToday(event.date))
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      return isPast(eventDate) && !isToday(eventDate) && eventDate < todayStart;
+    })
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 
   return { todayEvents, upcomingEvents, pastEvents };
