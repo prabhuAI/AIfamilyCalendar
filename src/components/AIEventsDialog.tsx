@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wand2 } from "lucide-react";
+import { Wand2, Mic, MicOff } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,8 +20,50 @@ interface AIEventsDialogProps {
 export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      toast({
+        title: "Error",
+        description: "Speech recognition is not supported in your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const recognition = new (window as any).webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setPrompt(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+      toast({
+        title: "Error",
+        description: "Failed to recognize speech. Please try again.",
+        variant: "destructive",
+      });
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
 
   const handleGenerateEvents = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,14 +141,28 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
             <Label htmlFor="prompt" className="text-sm font-medium text-[#4B5563]">
               What events would you like to create?
             </Label>
-            <Input
-              id="prompt"
-              placeholder="E.g., Generate events for a week-long family vacation"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              required
-              className="rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="prompt"
+                placeholder="E.g., Generate events for a week-long family vacation"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                required
+                className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
+              />
+              <Button
+                type="button"
+                onClick={startListening}
+                disabled={isListening}
+                className="bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#374151] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-xl transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]"
+              >
+                {isListening ? (
+                  <MicOff className="h-5 w-5" />
+                ) : (
+                  <Mic className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
           </div>
           <Button
             type="submit"
