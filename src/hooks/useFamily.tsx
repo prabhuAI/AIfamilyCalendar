@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  getCurrentUser,
+  getFamilyMember,
+  createNewFamily,
+  createFamilyMember,
+  getFamilyMembers,
+} from "@/utils/familyUtils";
 
 export const useFamilyData = () => {
   const { toast } = useToast();
@@ -11,53 +17,15 @@ export const useFamilyData = () => {
     queryFn: async () => {
       try {
         console.log('Starting family data fetch...');
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.error('No user found');
-          throw new Error('No user found');
-        }
-        console.log('Current user:', user.id);
-
-        // First try to get the user's family
-        const { data: familyMembers, error: memberError } = await supabase
-          .from('family_members')
-          .select('family_id')
-          .eq('user_id', user.id);
-
-        console.log('Family members query result:', { familyMembers, memberError });
+        const user = await getCurrentUser();
+        
+        // Get user's family membership
+        const { familyMembers } = await getFamilyMember(user.id);
 
         // If user has no family, create one
         if (!familyMembers || familyMembers.length === 0) {
-          console.log("No family found, creating new family");
-          
-          // First create the family
-          const { data: newFamily, error: familyError } = await supabase
-            .from('families')
-            .insert([{ family_name: 'My Family' }])
-            .select()
-            .single();
-
-          if (familyError) {
-            console.error("Error creating family:", familyError);
-            throw familyError;
-          }
-
-          console.log("Created new family:", newFamily);
-
-          // Then create the family member entry
-          const { error: memberInsertError } = await supabase
-            .from('family_members')
-            .insert([{ 
-              family_id: newFamily.id, 
-              user_id: user.id 
-            }]);
-
-          if (memberInsertError) {
-            console.error("Error creating family member:", memberInsertError);
-            throw memberInsertError;
-          }
-
-          console.log("Successfully created family and member");
+          const newFamily = await createNewFamily(user.id);
+          await createFamilyMember(newFamily.id, user.id);
           return { familyId: newFamily.id, members: [] };
         }
 
@@ -65,20 +33,8 @@ export const useFamilyData = () => {
         console.log('Found family ID:', familyId);
 
         // Get all members of the family
-        const { data: members, error: membersError } = await supabase
-          .from('family_members')
-          .select(`
-            user_id,
-            profiles:profiles(full_name, nickname)
-          `)
-          .eq('family_id', familyId);
+        const members = await getFamilyMembers(familyId);
 
-        if (membersError) {
-          console.error('Error fetching members:', membersError);
-          throw membersError;
-        }
-
-        console.log('Found family members:', members);
         return { familyId, members };
       } catch (error: any) {
         console.error('Error in family data fetch:', error);
