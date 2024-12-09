@@ -4,7 +4,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthChangeEvent, AuthError } from "@supabase/supabase-js";
+import { AuthChangeEvent, AuthError, Session } from "@supabase/supabase-js";
 import { SignUpForm } from "@/components/SignUpForm";
 import { ForgotPassword } from "@/components/ForgotPassword";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ const Login = () => {
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         console.log('Auth state changed:', event, session);
         
         if (event === 'SIGNED_IN' && session) {
@@ -34,7 +34,7 @@ const Login = () => {
             title: "Welcome!",
             description: "You have successfully signed in.",
           });
-        } else if (event === 'USER_DELETED') {
+        } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Account Deleted",
             description: "Your account has been successfully deleted.",
@@ -67,16 +67,18 @@ const Login = () => {
       });
     };
 
-    // Subscribe to auth error events
-    const authErrorSubscription = supabase.auth.onAuthStateChange((event, session, error) => {
-      if (error) {
-        handleAuthError(error);
+    // Subscribe to auth error events using a separate onAuthStateChange
+    const { data: { subscription: authErrorSubscription } } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, _session: Session | null, error?: AuthError) => {
+        if (error) {
+          handleAuthError(error);
+        }
       }
-    });
+    );
 
     return () => {
       subscription.unsubscribe();
-      authErrorSubscription.data.subscription.unsubscribe();
+      authErrorSubscription.unsubscribe();
     };
   }, [navigate, toast]);
 
