@@ -21,17 +21,22 @@ export const getFamilyMember = async (userId: string) => {
     const { data, error } = await supabase
       .from('family_members')
       .select('family_id')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .single();
 
     console.log('Family member query result:', { data, error });
+    
+    if (error && error.code === 'PGRST116') {
+      console.log('No family member found, will create new family');
+      return { familyMembers: null, error: null };
+    }
     
     if (error) {
       console.error('Error fetching family member:', error);
       return { familyMembers: null, error };
     }
     
-    // Return the first member if exists, otherwise null
-    return { familyMembers: data?.[0] || null, error: null };
+    return { familyMembers: data, error: null };
   } catch (error) {
     console.error('Exception in getFamilyMember:', error);
     return { familyMembers: null, error };
@@ -41,7 +46,7 @@ export const getFamilyMember = async (userId: string) => {
 export const createNewFamily = async (userId: string) => {
   console.log("Creating new family for user:", userId);
   
-  const { data: user } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('No authenticated user found');
   
   try {
