@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 220 16% 96%;
-    --foreground: 220 10% 25%;
+    --background: 221 45% 73%;
+    --foreground: 220 78% 29%;
 
-    --card: 220 16% 96%;
-    --card-foreground: 220 10% 25%;
+    --card: 220 78% 98%;
+    --card-foreground: 220 78% 29%;
 
-    --popover: 220 16% 96%;
-    --popover-foreground: 220 10% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 78% 29%;
 
-    --primary: 220 16% 96%;
-    --primary-foreground: 220 10% 25%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 85%;
-    --secondary-foreground: 220 10% 25%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 220 14% 85%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 220 14% 85%;
-    --accent-foreground: 220 10% 25%;
+    --accent: 221 83% 53%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 220 14% 85%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
 
     --radius: 1rem;
   }
@@ -42,40 +42,40 @@
   }
 
   body {
-    @apply bg-[#E8ECF4] text-foreground;
+    @apply bg-gradient-to-br from-[#accbee] to-[#e7f0fd] min-h-screen text-foreground;
   }
 
   /* Custom styles for react-datepicker */
   .react-datepicker {
-    @apply !font-sans !bg-[#E8ECF4] !border-none !rounded-2xl !shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)];
+    @apply !font-sans !bg-white !border !border-gray-200 !rounded-2xl !shadow-lg;
   }
 
   .react-datepicker__header {
-    @apply !bg-[#E8ECF4] !border-none !rounded-t-2xl !p-4;
+    @apply !bg-white !border-b !border-gray-100 !rounded-t-2xl !p-4;
   }
 
   .react-datepicker__current-month {
-    @apply !text-[#374151] !font-semibold !mb-4;
+    @apply !text-gray-900 !font-semibold !mb-4;
   }
 
   .react-datepicker__day-name {
-    @apply !text-[#6B7280] !font-medium !w-8 !h-8 !leading-8 !m-1;
+    @apply !text-gray-500 !font-medium !w-8 !h-8 !leading-8 !m-1;
   }
 
   .react-datepicker__day {
-    @apply !w-8 !h-8 !leading-8 !m-1 !rounded-xl !text-[#4B5563] hover:!bg-[#D8DDE5] hover:!text-[#374151] !transition-colors;
+    @apply !w-8 !h-8 !leading-8 !m-1 !rounded-xl !text-gray-700 hover:!bg-blue-50 hover:!text-blue-600 !transition-colors;
   }
 
   .react-datepicker__day--selected {
-    @apply !bg-[#D8DDE5] !text-[#374151] !font-semibold;
+    @apply !bg-blue-500 !text-white !font-semibold hover:!bg-blue-600;
   }
 
   .react-datepicker__day--keyboard-selected {
-    @apply !bg-[#D8DDE5] !text-[#374151] !font-semibold;
+    @apply !bg-blue-100 !text-blue-600 !font-semibold;
   }
 
   .react-datepicker__time-container {
-    @apply !border-l-0 !bg-[#E8ECF4];
+    @apply !border-l !border-gray-200;
   }
 
   .react-datepicker__time-box {
@@ -83,29 +83,14 @@
   }
 
   .react-datepicker__time-list-item {
-    @apply !text-[#4B5563] hover:!bg-[#D8DDE5] hover:!text-[#374151] !transition-colors;
+    @apply !text-gray-700 hover:!bg-blue-50 hover:!text-blue-600 !transition-colors;
   }
 
   .react-datepicker__time-list-item--selected {
-    @apply !bg-[#D8DDE5] !text-[#374151] !font-semibold;
+    @apply !bg-blue-500 !text-white !font-semibold;
   }
 
   .react-datepicker-popper {
     @apply !z-50;
-  }
-
-  @media (max-width: 640px) {
-    .react-datepicker__month-container {
-      @apply !text-sm;
-    }
-
-    .react-datepicker__day,
-    .react-datepicker__day-name {
-      @apply !w-7 !h-7 !leading-7 !m-0.5;
-    }
-
-    .react-datepicker__current-month {
-      @apply !text-base;
-    }
   }
 }

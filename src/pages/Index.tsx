@@ -111,15 +111,15 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2F2F7]">
-      <div className="container mx-auto py-4 px-3 md:py-8 md:px-8 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-[#accbee] to-[#e7f0fd] py-6">
+      <div className="container mx-auto px-4 max-w-3xl space-y-6">
         <Header 
           onLogout={handleLogout}
           notifications={notifications}
           onMarkAsRead={handleMarkAsRead}
           onAddEvent={addEvent}
         />
-        <div className="mt-6 md:mt-8">
+        <div className="space-y-4">
           <EventSections
             todayEvents={todayEvents}
             upcomingEvents={upcomingEvents}
