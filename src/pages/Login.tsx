@@ -24,7 +24,10 @@ const Login = () => {
             browser_notifications: true 
           });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error setting notification preferences:', error);
+          return;
+        }
         
         toast({
           title: "Notifications enabled",
@@ -37,9 +40,20 @@ const Login = () => {
   };
 
   useEffect(() => {
+    // Check if there's an existing session on component mount
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/");
+      }
+    };
+    checkSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, session) => {
-        if (event === 'SIGNED_IN') {
+        console.log('Auth state changed:', event, session);
+        
+        if (event === 'SIGNED_IN' && session) {
           await requestNotificationPermission();
           navigate("/");
           toast({
@@ -48,15 +62,20 @@ const Login = () => {
           });
         }
         if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Signed out",
-            description: "You have been signed out successfully.",
-          });
+          // Only show toast if it was an explicit sign out, not a session expiration
+          if (event === 'SIGNED_OUT') {
+            toast({
+              title: "Signed out",
+              description: "You have been signed out successfully.",
+            });
+          }
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   return (
