@@ -89,7 +89,7 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
           className="w-full mt-4 bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#6B7280] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-2xl px-6 py-3 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]"
         >
           <Wand2 className="h-5 w-5 mr-2" />
-          Generate with AI
+          Add Events with AI
         </Button>
       </DialogTrigger>
       <DialogContent 

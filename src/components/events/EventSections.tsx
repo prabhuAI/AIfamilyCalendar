@@ -34,16 +34,14 @@ export function EventSections({
       </div>
 
       {/* Today's Events */}
-      <div className="space-y-2 mb-2">
-        <h2 className="text-lg font-semibold text-[#1C1C1E]">Today's Events</h2>
-        <div className="bg-white rounded-xl p-3 shadow-sm">
-          <EventList
-            events={todayEvents}
-            onDelete={onDelete}
-            emptyMessage="No events scheduled for today"
-          />
-        </div>
-      </div>
+      <EventSection
+        title="Today's Events"
+        events={todayEvents}
+        isOpen={false}
+        onOpenChange={() => {}}
+        onDelete={onDelete}
+        emptyMessage="No events scheduled for today"
+      />
 
       {/* Upcoming Events */}
       <EventSection
