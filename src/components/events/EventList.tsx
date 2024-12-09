@@ -10,7 +10,7 @@ interface EventListProps {
 export function EventList({ events, onDelete, emptyMessage = "No events" }: EventListProps) {
   if (events.length === 0) {
     return (
-      <p className="text-[#8E8E93] text-center py-2 text-sm">{emptyMessage}</p>
+      <p className="text-gray-500 text-center py-4 text-sm">{emptyMessage}</p>
     );
   }
 

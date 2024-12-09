@@ -24,11 +24,15 @@ export function EventSection({
     <Collapsible
       open={isOpen}
       onOpenChange={onOpenChange}
-      className="bg-white/80 backdrop-blur-sm rounded-[24px] shadow-lg overflow-hidden border border-white/20"
+      className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-white/20 overflow-hidden"
     >
-      <CollapsibleTrigger className="flex justify-between items-center w-full p-4 text-left hover:bg-blue-50/50 transition-colors">
-        <h2 className="text-lg font-semibold text-[#4169E1]">{title}</h2>
-        <ChevronDown className={`h-5 w-5 text-[#4169E1] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      <CollapsibleTrigger className="flex justify-between items-center w-full p-4 text-left hover:bg-gray-50/50 transition-colors">
+        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <ChevronDown 
+          className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`} 
+        />
       </CollapsibleTrigger>
       <CollapsibleContent className="px-4 pb-4">
         <EventList

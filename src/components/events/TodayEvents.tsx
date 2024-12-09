@@ -9,8 +9,8 @@ interface TodayEventsProps {
 export function TodayEvents({ events, onDelete }: TodayEventsProps) {
   return (
     <div className="space-y-2 mb-4">
-      <h2 className="text-lg font-semibold text-[#4169E1]">Today's Events</h2>
-      <div className="bg-white/80 backdrop-blur-sm rounded-[24px] p-4 shadow-lg border border-white/20">
+      <h2 className="text-lg font-semibold text-gray-900">Today's Events</h2>
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-white/20">
         <EventList
           events={events}
           onDelete={onDelete}
