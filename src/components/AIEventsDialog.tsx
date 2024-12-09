@@ -92,7 +92,9 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
           Generate with AI
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] border-none p-6">
+      <DialogContent 
+        className="w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] border-none p-6 fixed bottom-0 left-[50%] translate-x-[-50%] translate-y-0 sm:translate-y-[-50%] sm:bottom-[unset] sm:top-[50%] max-h-[80vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle className="text-[#374151] text-xl font-semibold">Generate Events with AI</DialogTitle>
         </DialogHeader>
@@ -109,6 +111,15 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
                 onChange={(e) => setPrompt(e.target.value)}
                 required
                 className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
+                onFocus={() => {
+                  // Add a small delay to ensure the input is in view after keyboard appears
+                  setTimeout(() => {
+                    document.getElementById('prompt')?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'center'
+                    });
+                  }, 300);
+                }}
               />
               <MicrophoneButton
                 isListening={isListening}
