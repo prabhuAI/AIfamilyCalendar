@@ -17,8 +17,8 @@ serve(async (req) => {
     console.log('Starting generate-events function');
     
     if (!openAIApiKey) {
-      console.error('OPENAI_API_KEY is not set');
-      throw new Error('OpenAI API key is not configured');
+      console.error('OPENAI_API_KEY environment variable is not set');
+      throw new Error('OpenAI API key is not configured. Please set the OPENAI_API_KEY secret in your Supabase project settings.');
     }
 
     const { prompt } = await req.json();
@@ -45,13 +45,16 @@ serve(async (req) => {
       }),
     });
 
-    console.log('OpenAI response status:', response.status);
+    console.log('OpenAI API response status:', response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
     const data = await response.json();
     console.log('OpenAI response:', data);
-
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
-    }
 
     let events;
     try {
@@ -59,7 +62,12 @@ serve(async (req) => {
       console.log('Parsed events:', events);
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
-      throw new Error('Failed to parse generated events');
+      throw new Error('Failed to parse generated events. The AI response was not in the expected format.');
+    }
+
+    if (!Array.isArray(events)) {
+      console.error('Invalid events format:', events);
+      throw new Error('Generated events are not in the expected array format');
     }
 
     return new Response(JSON.stringify({ events }), {
