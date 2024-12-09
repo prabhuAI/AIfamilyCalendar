@@ -73,6 +73,11 @@ export const SignUpForm = ({ onBack }: { onBack: () => void }) => {
       title: "Success",
       description: "Account created successfully! Please check your email to verify your account.",
     });
+
+    // Add a small delay before redirecting to ensure the toast is visible
+    setTimeout(() => {
+      onBack();
+    }, 2000);
   };
 
   return (
