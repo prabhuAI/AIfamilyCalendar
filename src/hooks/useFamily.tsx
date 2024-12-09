@@ -6,7 +6,7 @@ export const useFamilyData = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: familyData, isLoading } = useQuery({
+  const { data: familyData, isLoading, refetch } = useQuery({
     queryKey: ['family'],
     queryFn: async () => {
       try {
@@ -128,6 +128,7 @@ export const useFamilyData = () => {
   return {
     familyData: familyData || { familyId: null, members: [] },
     isLoading,
-    removeMember
+    removeMember,
+    refetch
   };
 };
