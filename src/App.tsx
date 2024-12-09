@@ -43,12 +43,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
         if (!currentSession) {
           console.log("No active session found in ProtectedRoute");
+          // Clear any stale auth data
+          await supabase.auth.signOut();
           navigate('/login');
         }
       } catch (error) {
         console.error("Error checking auth:", error);
+        // Clear any stale auth data
+        await supabase.auth.signOut();
         toast({
-          title: "Authentication Error",
+          title: "Session Expired",
           description: "Please sign in again",
           variant: "destructive",
         });
@@ -63,8 +67,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate("/login");
+      console.log("Auth state changed:", event, session);
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        if (!session) {
+          navigate("/login");
+        }
       }
     });
 
@@ -100,19 +107,30 @@ const App = () => {
         
         console.log("Initial session state:", session ? "Session exists" : "No session");
         
-        // Refresh session if it exists
         if (session) {
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            console.error("Session refresh error:", refreshError);
+          try {
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) {
+              console.error("Session refresh error:", refreshError);
+              if (refreshError.message.includes('refresh_token_not_found')) {
+                await supabase.auth.signOut();
+                throw new Error('Session expired. Please sign in again.');
+              }
+              throw refreshError;
+            }
+          } catch (refreshError) {
+            console.error("Error refreshing session:", refreshError);
+            await supabase.auth.signOut();
             throw refreshError;
           }
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
+        // Ensure we clear any stale auth state
+        await supabase.auth.signOut();
         toast({
           title: "Authentication Error",
-          description: "Please try signing in again",
+          description: "Please sign in again",
           variant: "destructive",
         });
       } finally {
