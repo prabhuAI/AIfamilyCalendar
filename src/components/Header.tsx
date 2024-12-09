@@ -14,11 +14,9 @@ interface HeaderProps {
 
 export const Header = ({ onLogout, notifications, onMarkAsRead, onAddEvent }: HeaderProps) => {
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div className="flex items-center gap-2">
-        <h1 className="text-3xl font-semibold text-[#1C1C1E] tracking-tight">Family Calendar</h1>
-      </div>
-      <div className="flex gap-4 items-center">
+    <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+      <h1 className="text-2xl md:text-3xl font-semibold text-[#1C1C1E] tracking-tight">Family Calendar</h1>
+      <div className="flex items-center gap-2 md:gap-4">
         <NotificationIcon 
           notifications={notifications} 
           onMarkAsRead={onMarkAsRead}

@@ -113,14 +113,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
-      <div className="container max-w-2xl py-8 px-4 md:px-8">
+      <div className="container mx-auto py-4 px-3 md:py-8 md:px-8 max-w-2xl">
         <Header 
           onLogout={handleLogout}
           notifications={notifications}
           onMarkAsRead={handleMarkAsRead}
           onAddEvent={addEvent}
         />
-        <div className="space-y-8">
+        <div className="mt-6 md:mt-8">
           <EventSections
             todayEvents={todayEvents}
             upcomingEvents={upcomingEvents}
