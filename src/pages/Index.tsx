@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
 import { EventSections } from "@/components/EventSections";
-import { FamilyMembers } from "@/components/FamilyMembers";
 import { useEvents } from "@/hooks/useEvents";
 import { useNotifications } from "@/hooks/useNotifications";
 
@@ -53,11 +52,9 @@ const Index = () => {
   const handleAuthError = async (error: any) => {
     console.log("Handling auth error:", error);
     
-    // Clear any cached data
     localStorage.clear();
     sessionStorage.clear();
     
-    // Sign out to clear any invalid session
     try {
       await supabase.auth.signOut();
     } catch (signOutError) {
@@ -78,7 +75,6 @@ const Index = () => {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error);
-        // If we get a user_not_found error, treat it as a successful logout
         if (error.message?.includes('user_not_found')) {
           localStorage.clear();
           sessionStorage.clear();
@@ -94,13 +90,11 @@ const Index = () => {
         return;
       }
       
-      // Clear any cached data
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
     } catch (error: any) {
       console.error("Unexpected error during logout:", error);
-      // Handle unexpected errors by clearing everything and redirecting
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
@@ -137,7 +131,6 @@ const Index = () => {
             setIsPastOpen={setIsPastOpen}
             onDelete={deleteEvent}
           />
-          <FamilyMembers />
         </div>
       </div>
     </div>
