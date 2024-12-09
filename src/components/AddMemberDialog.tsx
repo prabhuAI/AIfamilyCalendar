@@ -36,7 +36,11 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
           .select('id')
           .single();
 
-        if (familyError) throw familyError;
+        if (familyError) {
+          console.error('Error creating family:', familyError);
+          throw familyError;
+        }
+        
         familyId = newFamily.id;
 
         // Create family member entry for the current user
@@ -47,30 +51,41 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
             user_id: user.id
           }]);
 
-        if (memberError) throw memberError;
+        if (memberError) {
+          console.error('Error creating family member:', memberError);
+          throw memberError;
+        }
       }
 
+      // Generate a unique ID for the new profile
+      const newProfileId = crypto.randomUUID();
+
       // Create profile for the new member
-      const { data: profileData, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
-        .insert([{
+        .insert({
+          id: newProfileId,
           full_name: fullName,
           nickname: nickname || fullName.substring(0, Math.min(fullName.length, 6))
-        }])
-        .select('id')
-        .single();
+        });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        throw profileError;
+      }
 
       // Add the new member to the family
       const { error: memberError } = await supabase
         .from('family_members')
-        .insert([{
+        .insert({
           family_id: familyId,
-          user_id: profileData.id
-        }]);
+          user_id: newProfileId
+        });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error adding family member:', memberError);
+        throw memberError;
+      }
 
       toast({
         title: "Success",
