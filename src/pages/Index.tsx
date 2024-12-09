@@ -33,11 +33,6 @@ const Index = () => {
           return;
         }
 
-        toast({
-          title: "Welcome back!",
-          duration: 2000,
-        });
-
         const { data: user, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.error("User verification error:", userError);
