@@ -25,44 +25,86 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
   const { toast } = useToast();
 
   const startListening = () => {
-    if (!('webkitSpeechRecognition' in window)) {
+    // Check for different Speech Recognition APIs
+    const SpeechRecognition = (window as any).SpeechRecognition || 
+                             (window as any).webkitSpeechRecognition ||
+                             (window as any).mozSpeechRecognition ||
+                             (window as any).msSpeechRecognition;
+
+    if (!SpeechRecognition) {
       toast({
         title: "Error",
-        description: "Speech recognition is not supported in your browser.",
+        description: "Speech recognition is not supported in your browser. Please try using Chrome on desktop or Android.",
         variant: "destructive",
       });
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US'; // Set language to English
 
-    recognition.onstart = () => {
-      setIsListening(true);
-    };
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast({
+          title: "Listening",
+          description: "Speak now...",
+        });
+      };
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setPrompt(transcript);
-      setIsListening(false);
-    };
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setPrompt(transcript);
+        setIsListening(false);
+        toast({
+          title: "Success",
+          description: "Speech captured successfully!",
+        });
+      };
 
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error);
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        
+        let errorMessage = "Failed to recognize speech. ";
+        switch (event.error) {
+          case 'network':
+            errorMessage += "Please check your internet connection.";
+            break;
+          case 'not-allowed':
+          case 'permission-denied':
+            errorMessage += "Microphone permission was denied.";
+            break;
+          case 'no-speech':
+            errorMessage += "No speech was detected.";
+            break;
+          default:
+            errorMessage += "Please try again.";
+        }
+
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (error) {
+      console.error('Speech recognition initialization error:', error);
       setIsListening(false);
       toast({
         title: "Error",
-        description: "Failed to recognize speech. Please try again.",
+        description: "Failed to initialize speech recognition. Please try a different browser.",
         variant: "destructive",
       });
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+    }
   };
 
   const handleGenerateEvents = async (e: React.FormEvent) => {
