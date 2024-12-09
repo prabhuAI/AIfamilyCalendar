@@ -16,9 +16,10 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface AddEventDialogProps {
   onAddEvent: (event: any) => void;
+  children?: React.ReactNode; // Add this line to accept children
 }
 
-export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
+export function AddEventDialog({ onAddEvent, children }: AddEventDialogProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | null>(null);
@@ -61,10 +62,12 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#6B7280] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-2xl px-6 py-3 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]">
-          <Plus className="h-5 w-5 mr-2" />
-          Add Event
-        </Button>
+        {children || (
+          <Button className="bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#6B7280] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-2xl px-6 py-3 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]">
+            <Plus className="h-5 w-5 mr-2" />
+            Add Event
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] border-none p-6">
         <DialogHeader>
