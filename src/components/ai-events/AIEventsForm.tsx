@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { MicrophoneButton } from "../MicrophoneButton";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 interface AIEventsFormProps {
   prompt: string;
@@ -29,18 +29,6 @@ export function AIEventsForm({
     inputRef.current?.focus();
   };
 
-  // Handle input focus
-  const handleInputFocus = () => {
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.scrollIntoView({ 
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }
-    }, 300); // Wait for keyboard to appear
-  };
-
   return (
     <form onSubmit={onSubmit} className="space-y-5 mt-4">
       <div className="space-y-2">
@@ -55,7 +43,6 @@ export function AIEventsForm({
               placeholder="E.g., Generate events for a week-long family vacation"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onFocus={handleInputFocus}
               required
               className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200 pr-8"
             />
