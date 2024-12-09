@@ -17,26 +17,54 @@ export const getFamilyMember = async (userId: string) => {
     .eq('user_id', userId);
 
   console.log('Family member query result:', { familyMembers, error });
-  return { familyMembers, error };
+  
+  // Return empty array instead of throwing error when no members found
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
+  
+  return { familyMembers: familyMembers || [], error: null };
 };
 
 export const createNewFamily = async (userId: string) => {
   console.log("Creating new family for user:", userId);
   
   try {
-    const { data, error } = await supabase
+    // First create the family
+    const { data: family, error: familyError } = await supabase
       .from('families')
-      .insert([{ family_name: 'My Family' }])
+      .insert([{ 
+        family_name: 'My Family'
+      }])
       .select()
       .single();
 
-    if (error) throw error;
-    if (!data) throw new Error('No data returned from family creation');
+    if (familyError) {
+      console.error("Error creating family:", familyError);
+      throw familyError;
+    }
 
-    console.log("Created new family:", data);
-    return data;
+    if (!family) {
+      throw new Error('No data returned from family creation');
+    }
+
+    // Then create the family member entry
+    const { error: memberError } = await supabase
+      .from('family_members')
+      .insert([{
+        family_id: family.id,
+        user_id: userId
+      }]);
+
+    if (memberError) {
+      console.error("Error creating family member:", memberError);
+      throw memberError;
+    }
+
+    console.log("Created new family:", family);
+    return family;
   } catch (error) {
-    console.error("Error creating family:", error);
+    console.error("Error in createNewFamily:", error);
     throw error;
   }
 };
@@ -76,5 +104,5 @@ export const getFamilyMembers = async (familyId: string) => {
   }
 
   console.log('Found family members:', members);
-  return members;
+  return members || [];
 };
