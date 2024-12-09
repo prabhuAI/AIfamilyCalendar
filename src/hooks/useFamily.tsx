@@ -9,17 +9,23 @@ export const useFamilyData = () => {
   const { data: familyData, isLoading } = useQuery({
     queryKey: ['family'],
     queryFn: async () => {
+      console.log('Starting family data fetch...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
+      console.log('Current user:', user.id);
 
       // First try to get the user's family
       const { data: familyMembers, error: memberError } = await supabase
         .from('family_members')
         .select('family_id')
         .eq('user_id', user.id)
-        .maybeSingle(); // Use maybeSingle() instead of single() to handle no results
+        .limit(1)
+        .single();
 
-      if (memberError) throw memberError;
+      if (memberError && memberError.code !== 'PGRST116') {
+        console.error('Error fetching family members:', memberError);
+        throw memberError;
+      }
 
       // If user has no family, create one
       if (!familyMembers) {
@@ -56,6 +62,7 @@ export const useFamilyData = () => {
       }
 
       const familyId = familyMembers.family_id;
+      console.log('Found family ID:', familyId);
 
       // Get all members of the family
       const { data: members, error: membersError } = await supabase
@@ -66,63 +73,13 @@ export const useFamilyData = () => {
         `)
         .eq('family_id', familyId);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error('Error fetching members:', membersError);
+        throw membersError;
+      }
 
+      console.log('Found family members:', members);
       return { familyId, members };
-    }
-  });
-
-  const addMember = useMutation({
-    mutationFn: async (memberName: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
-      // First try to get the user's family
-      const { data: familyMember, error: memberError } = await supabase
-        .from('family_members')
-        .select('family_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (memberError) throw memberError;
-
-      // Create profile for the new member
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: user.id,
-          full_name: memberName,
-          nickname: memberName
-        }])
-        .select()
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Add member to family
-      const { error: familyMemberError } = await supabase
-        .from('family_members')
-        .insert([{
-          family_id: familyMember.family_id,
-          user_id: user.id
-        }]);
-
-      if (familyMemberError) throw familyMemberError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['family'] });
-      toast({
-        title: "Success",
-        description: "Family member added successfully",
-      });
-    },
-    onError: (error: Error) => {
-      console.error("Error adding family member:", error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
     }
   });
 
@@ -156,7 +113,6 @@ export const useFamilyData = () => {
   return {
     familyData,
     isLoading,
-    addMember,
     removeMember
   };
 };
