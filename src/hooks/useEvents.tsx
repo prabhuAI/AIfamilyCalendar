@@ -25,20 +25,22 @@ const mapDatabaseEventToFamilyEvent = (event: any): FamilyEvent => ({
 
 // Helper function to fetch events from database
 const fetchEvents = async (familyId: string) => {
+  console.log('Starting fetchEvents...');
   const user = await getCurrentUser();
+  console.log('Current user:', user.id);
   
   const { data, error } = await supabase
     .from('family_calendar')
-    .select('*')
+    .select('id, event_name, event_description, start_time, end_time, created_at, family_id, user_id')
     .eq('family_id', familyId)
-    .eq('user_id', user.id)
-    .order('start_time', { ascending: true });
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Error fetching events:', error);
     throw error;
   }
 
+  console.log('Fetched events:', data);
   return (data || []).map(mapDatabaseEventToFamilyEvent);
 };
 
@@ -77,21 +79,27 @@ export const useEvents = (familyId: string | null) => {
         user_id: user.id
       };
 
+      console.log('Adding event with data:', eventData);
+
       const { data, error } = await supabase
         .from('family_calendar')
         .insert([eventData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding event:', error);
+        throw error;
+      }
 
+      console.log('Successfully added event:', data);
       refetch();
       toast({
         title: "Event added",
         description: "Your event has been successfully added to the calendar.",
       });
     } catch (error: any) {
-      console.error('Error adding event:', error);
+      console.error('Error in addEvent:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -102,20 +110,28 @@ export const useEvents = (familyId: string | null) => {
 
   const deleteEvent = async (id: string) => {
     try {
+      const user = await getCurrentUser();
+      console.log('Deleting event:', id, 'for user:', user.id);
+
       const { error } = await supabase
         .from('family_calendar')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting event:', error);
+        throw error;
+      }
 
+      console.log('Successfully deleted event:', id);
       refetch();
       toast({
         title: "Event deleted",
         description: "Your event has been successfully removed from the calendar.",
       });
     } catch (error: any) {
-      console.error('Error deleting event:', error);
+      console.error('Error in deleteEvent:', error);
       toast({
         title: "Error",
         description: error.message,
