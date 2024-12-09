@@ -18,20 +18,74 @@ const Index = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session) {
-        console.log("No active session found:", error?.message);
-        navigate('/login');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Session check result:", session ? "Session exists" : "No session", error);
+        
+        if (error) {
+          console.error("Session check error:", error);
+          await handleAuthError(error);
+          return;
+        }
+        
+        if (!session) {
+          console.log("No active session found");
+          navigate('/login');
+          return;
+        }
+
+        // Verify the user exists
+        const { data: user, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("User verification error:", userError);
+          await handleAuthError(userError);
+          return;
+        }
+      } catch (error) {
+        console.error("Unexpected error during session check:", error);
+        await handleAuthError(error);
       }
     };
+
     checkSession();
   }, [navigate]);
+
+  const handleAuthError = async (error: any) => {
+    console.log("Handling auth error:", error);
+    
+    // Clear any cached data
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Sign out to clear any invalid session
+    try {
+      await supabase.auth.signOut();
+    } catch (signOutError) {
+      console.error("Error during sign out:", signOutError);
+    }
+
+    toast({
+      title: "Authentication Error",
+      description: "Please sign in again.",
+      variant: "destructive",
+    });
+
+    navigate('/login');
+  };
 
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("Logout error:", error.message);
+        console.error("Logout error:", error);
+        // If we get a user_not_found error, treat it as a successful logout
+        if (error.message?.includes('user_not_found')) {
+          localStorage.clear();
+          sessionStorage.clear();
+          navigate('/login');
+          return;
+        }
+        
         toast({
           title: "Error",
           description: "Failed to log out. Please try again.",
@@ -39,12 +93,18 @@ const Index = () => {
         });
         return;
       }
+      
       // Clear any cached data
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
     } catch (error: any) {
       console.error("Unexpected error during logout:", error);
+      // Handle unexpected errors by clearing everything and redirecting
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+      
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
