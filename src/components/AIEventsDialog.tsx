@@ -28,17 +28,28 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      console.log('Starting event generation with prompt:', prompt);
       const response = await supabase.functions.invoke('generate-events', {
         body: { prompt },
       });
 
-      if (response.error) throw new Error(response.error.message);
+      console.log('Edge function response:', response);
+
+      if (response.error) {
+        console.error('Edge function error:', response.error);
+        throw new Error(response.error.message);
+      }
 
       const { events } = response.data;
 
-      if (events && events.length > 0) {
+      if (!events || !Array.isArray(events)) {
+        console.error('Invalid events data:', response.data);
+        throw new Error('Invalid response format from AI');
+      }
+
+      console.log('Generated events:', events);
+
+      if (events.length > 0) {
         for (const event of events) {
           await onAddEvent({
             title: event.title,
@@ -53,12 +64,14 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
           description: `Successfully added ${events.length} events to your calendar.`,
         });
         setOpen(false);
+      } else {
+        throw new Error('No events were generated');
       }
     } catch (error: any) {
       console.error("Error generating events:", error);
       toast({
         title: "Error",
-        description: "Failed to generate events. Please try again.",
+        description: error.message || "Failed to generate events. Please try again.",
         variant: "destructive",
       });
     } finally {
