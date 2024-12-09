@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AuthChangeEvent } from "@supabase/supabase-js";
 import { SignUpForm } from "@/components/SignUpForm";
+import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const navigate = useNavigate();
