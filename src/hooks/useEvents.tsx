@@ -29,11 +29,23 @@ const fetchEvents = async (familyId: string) => {
   const user = await getCurrentUser();
   console.log('Current user:', user.id);
   
+  // First, verify user is member of the family
+  const { data: familyMember, error: memberError } = await supabase
+    .from('family_members')
+    .select('family_id')
+    .eq('family_id', familyId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (memberError || !familyMember) {
+    console.error('User is not a member of this family:', memberError);
+    throw new Error('You are not a member of this family');
+  }
+
   const { data, error } = await supabase
     .from('family_calendar')
-    .select('id, event_name, event_description, start_time, end_time, created_at, family_id, user_id')
-    .eq('family_id', familyId)
-    .eq('user_id', user.id);
+    .select('*')
+    .eq('family_id', familyId);
 
   if (error) {
     console.error('Error fetching events:', error);
@@ -69,6 +81,18 @@ export const useEvents = (familyId: string | null) => {
     try {
       const user = await getCurrentUser();
       if (!familyId) throw new Error('No family ID available');
+
+      // First, verify user is member of the family
+      const { data: familyMember, error: memberError } = await supabase
+        .from('family_members')
+        .select('family_id')
+        .eq('family_id', familyId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (memberError || !familyMember) {
+        throw new Error('You are not a member of this family');
+      }
 
       const eventData = {
         family_id: familyId,
