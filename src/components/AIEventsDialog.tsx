@@ -30,21 +30,13 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-events`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ prompt }),
-        }
-      );
+      const response = await supabase.functions.invoke('generate-events', {
+        body: { prompt },
+      });
 
-      const { events, error } = await response.json();
+      if (response.error) throw new Error(response.error.message);
 
-      if (error) throw new Error(error);
+      const { events } = response.data;
 
       if (events && events.length > 0) {
         for (const event of events) {
