@@ -15,7 +15,6 @@ const getCurrentUser = async () => {
   return user;
 };
 
-// Helper function to map database events to FamilyEvent type
 const mapDatabaseEventToFamilyEvent = (event: Event): FamilyEvent => ({
   id: event.id,
   title: event.event_name,
@@ -25,7 +24,6 @@ const mapDatabaseEventToFamilyEvent = (event: Event): FamilyEvent => ({
   createdAt: new Date(event.created_at)
 });
 
-// Helper function to fetch events from database
 const fetchEvents = async () => {
   console.log('Starting fetchEvents...');
   const user = await getCurrentUser();
@@ -52,6 +50,7 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
 
   console.log('Filtering events. Current time:', now);
 
+  // Filter and sort today's events by time
   const todayEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
@@ -61,6 +60,7 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
     })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  // Filter and sort upcoming events chronologically
   const upcomingEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
@@ -68,8 +68,9 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
       console.log('Event:', event.title, 'Date:', eventDate, 'Is Upcoming:', isUpcoming);
       return isUpcoming;
     })
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+    .sort((a, b) => a.date.getTime() - b.date.getTime()); // Sort by date ascending
 
+  // Filter and sort past events reverse chronologically (most recent first)
   const pastEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
@@ -77,9 +78,9 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
       console.log('Event:', event.title, 'Date:', eventDate, 'Is Past:', isPast);
       return isPast;
     })
-    .sort((a, b) => b.date.getTime() - a.date.getTime());
+    .sort((a, b) => b.date.getTime() - a.date.getTime()); // Sort by date descending
 
-  console.log('Filtered events:', {
+  console.log('Filtered and sorted events:', {
     today: todayEvents.length,
     upcoming: upcomingEvents.length,
     past: pastEvents.length
