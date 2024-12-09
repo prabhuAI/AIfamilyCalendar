@@ -13,43 +13,48 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
   const { toast } = useToast();
 
   const startListening = async () => {
-    const SpeechRecognition = getSpeechRecognition();
-    console.log("Starting speech recognition...");
+    try {
+      console.log("Starting speech recognition process...");
+      
+      // First check if we're on iOS
+      const isIOS = isIOSDevice();
+      console.log("iOS detection:", isIOS);
 
-    if (!SpeechRecognition) {
-      toast({
-        title: "Error",
-        description: "Speech recognition is not supported in your browser. Please try using Chrome on desktop or Android.",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (isIOS) {
+        const hasPermission = await checkMicrophonePermission();
+        if (!hasPermission) {
+          toast({
+            title: "Microphone Access Required",
+            description: "Please enable microphone access in your browser settings for this website.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
 
-    // Check for iOS device
-    if (isIOSDevice()) {
-      console.log("iOS device detected");
-      const hasPermission = await checkMicrophonePermission();
-      if (!hasPermission) {
+      const SpeechRecognition = getSpeechRecognition();
+      console.log("Speech Recognition API available:", !!SpeechRecognition);
+
+      if (!SpeechRecognition) {
         toast({
-          title: "Microphone Access Required",
-          description: "Please enable microphone access in your iOS settings for this website.",
+          title: "Not Supported",
+          description: "Speech recognition is not supported in your browser. Please try Safari on iOS or Chrome on Android/Desktop.",
           variant: "destructive",
         });
         return;
       }
-    }
 
-    try {
       const recognition = new SpeechRecognition();
+      
+      // Configure recognition
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
-      // Add specific iOS settings
-      if (isIOSDevice()) {
-        // @ts-ignore - iOS specific property
+      // iOS-specific configurations
+      if (isIOS) {
+        // @ts-ignore - iOS specific properties
         recognition.interimResults = true;
-        // @ts-ignore - iOS specific property
         recognition.maxAlternatives = 1;
       }
 
@@ -63,19 +68,24 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
       };
 
       recognition.onresult = (event: any) => {
-        console.log("Speech recognition result received", event);
-        const transcript = event.results[0][0].transcript;
-        console.log("Transcript:", transcript);
-        onTranscript(transcript);
-        setIsListening(false);
-        toast({
-          title: "Success",
-          description: "Speech captured successfully!",
-        });
+        console.log("Speech recognition result received:", event);
+        try {
+          const transcript = event.results[0][0].transcript;
+          console.log("Transcript:", transcript);
+          onTranscript(transcript);
+          setIsListening(false);
+          toast({
+            title: "Success",
+            description: "Speech captured successfully!",
+          });
+        } catch (error) {
+          console.error("Error processing speech result:", error);
+          throw new Error("Failed to process speech result");
+        }
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        console.error('Speech recognition error:', event);
         setIsListening(false);
         
         let errorMessage = "Failed to recognize speech. ";
@@ -85,8 +95,8 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
             break;
           case 'not-allowed':
           case 'permission-denied':
-            errorMessage += isIOSDevice() 
-              ? "Please enable microphone access in your iOS settings."
+            errorMessage = isIOS 
+              ? "Please enable microphone access in your browser settings."
               : "Microphone permission was denied.";
             break;
           case 'no-speech':
@@ -99,10 +109,14 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
             errorMessage += "No microphone was found. Please ensure your device has a working microphone.";
             break;
           case 'service-not-allowed':
-            errorMessage += "Speech recognition service is not allowed. Please try again.";
+            if (isIOS) {
+              errorMessage = "Speech recognition is not available in this browser on iOS. Please try using Safari instead.";
+            } else {
+              errorMessage += "Speech recognition service is not allowed. Please try again.";
+            }
             break;
           default:
-            errorMessage += "Please try again.";
+            errorMessage += "Please try again or use Safari if you're on iOS.";
         }
 
         toast({
@@ -117,13 +131,15 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
         setIsListening(false);
       };
 
+      // Start recognition
+      console.log("Attempting to start recognition");
       recognition.start();
     } catch (error) {
       console.error('Speech recognition initialization error:', error);
       setIsListening(false);
       toast({
         title: "Error",
-        description: "Failed to initialize speech recognition. Please try a different browser.",
+        description: "Failed to start speech recognition. If you're using iOS, please try Safari instead of Chrome.",
         variant: "destructive",
       });
     }
