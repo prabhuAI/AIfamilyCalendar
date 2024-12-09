@@ -26,27 +26,30 @@ export const useFamilyData = () => {
         // If user has no family, create one
         if (!familyMembers || familyMembers.length === 0) {
           console.log('No family found, creating new family...');
-          const newFamily = await createNewFamily(user.id);
-          await createFamilyMember(newFamily.id, user.id);
-          return { familyId: newFamily.id, members: [] };
+          try {
+            const newFamily = await createNewFamily(user.id);
+            return { familyId: newFamily.id, members: [] };
+          } catch (error: any) {
+            console.error('Error creating new family:', error);
+            return { familyId: null, members: [] };
+          }
         }
 
         const familyId = familyMembers[0].family_id;
         console.log('Found family ID:', familyId);
 
         // Get all members of the family
-        const members = await getFamilyMembers(familyId);
-        // It's okay if members is empty, we'll return an empty array
-        return { familyId, members: members || [] };
-
+        try {
+          const members = await getFamilyMembers(familyId);
+          return { familyId, members };
+        } catch (error: any) {
+          console.error('Error fetching family members:', error);
+          return { familyId, members: [] };
+        }
       } catch (error: any) {
         console.error('Error in family data fetch:', error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to load family data",
-          variant: "destructive",
-        });
-        throw error;
+        // Return a safe default state instead of throwing
+        return { familyId: null, members: [] };
       }
     },
     retry: 1,
@@ -84,7 +87,7 @@ export const useFamilyData = () => {
   });
 
   return {
-    familyData,
+    familyData: familyData || { familyId: null, members: [] },
     isLoading,
     removeMember
   };
