@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { FamilyEvent } from "@/types/event";
 import { isToday, isFuture, isPast } from "date-fns";
+import { Database } from "@/integrations/supabase/types";
+
+type Event = Database['public']['Tables']['family_calendar']['Row'];
 
 // Helper function to fetch user
 const getCurrentUser = async () => {
@@ -14,7 +17,7 @@ const getCurrentUser = async () => {
 };
 
 // Helper function to map database events to FamilyEvent type
-const mapDatabaseEventToFamilyEvent = (event: any): FamilyEvent => ({
+const mapDatabaseEventToFamilyEvent = (event: Event): FamilyEvent => ({
   id: event.id,
   title: event.event_name,
   description: event.event_description || '',

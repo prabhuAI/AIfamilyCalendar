@@ -5,14 +5,13 @@ import { NotificationIcon } from './NotificationIcon';
 import { AddEventDialog } from './AddEventDialog';
 
 interface HeaderProps {
-  familyId: string | null;
   onLogout: () => void;
   notifications: any[];
   onMarkAsRead: (id: string) => void;
   onAddEvent: (event: any) => void;
 }
 
-export const Header = ({ familyId, onLogout, notifications, onMarkAsRead, onAddEvent }: HeaderProps) => {
+export const Header = ({ onLogout, notifications, onMarkAsRead, onAddEvent }: HeaderProps) => {
   return (
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-3xl font-semibold text-[#1C1C1E] tracking-tight">Family Calendar</h1>
@@ -21,7 +20,7 @@ export const Header = ({ familyId, onLogout, notifications, onMarkAsRead, onAddE
           notifications={notifications} 
           onMarkAsRead={onMarkAsRead}
         />
-        {familyId && <AddEventDialog onAddEvent={onAddEvent} familyId={familyId} />}
+        <AddEventDialog onAddEvent={onAddEvent} />
         <Button 
           variant="outline" 
           size="icon"
