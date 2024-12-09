@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { FamilyEvent } from "@/types/event";
-import { isToday, isFuture, isPast, startOfDay, endOfDay, isAfter, isBefore } from "date-fns";
+import { isToday, startOfDay, endOfDay, isAfter, isBefore } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 
 type Event = Database['public']['Tables']['family_calendar']['Row'];
@@ -52,26 +52,42 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
 
+  console.log('Filtering events. Current time:', now);
+
   const todayEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      return isToday(eventDate);
+      const isEventToday = isToday(eventDate);
+      console.log('Event:', event.title, 'Date:', eventDate, 'Is Today:', isEventToday);
+      return isEventToday;
     })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const upcomingEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      return isAfter(eventDate, todayEnd);
+      // If it's not today and it's after today's start, it's upcoming
+      const isUpcoming = !isToday(eventDate) && isAfter(eventDate, todayStart);
+      console.log('Event:', event.title, 'Date:', eventDate, 'Is Upcoming:', isUpcoming);
+      return isUpcoming;
     })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const pastEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      return isBefore(eventDate, todayStart);
+      // If it's before today's start, it's in the past
+      const isPast = isBefore(eventDate, todayStart);
+      console.log('Event:', event.title, 'Date:', eventDate, 'Is Past:', isPast);
+      return isPast;
     })
     .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  console.log('Filtered events:', {
+    today: todayEvents.length,
+    upcoming: upcomingEvents.length,
+    past: pastEvents.length
+  });
 
   return { todayEvents, upcomingEvents, pastEvents };
 };
