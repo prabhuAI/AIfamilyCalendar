@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserPlus, UserMinus } from "lucide-react";
 
+interface AddMemberData {
+  email: string;
+}
+
 export function FamilyMembers() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
@@ -59,11 +63,11 @@ export function FamilyMembers() {
   });
 
   const addMember = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (data: AddMemberData) => {
       const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
       if (userError) throw userError;
 
-      const user = users.find(u => u.email === email);
+      const user = users.find(u => u.email === data.email);
       if (!user) throw new Error('User not found');
 
       const { error: memberError } = await supabase
@@ -118,7 +122,7 @@ export function FamilyMembers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addMember.mutate();
+    addMember.mutate({ email });
   };
 
   return (

@@ -7,6 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { Plus } from "lucide-react";
@@ -99,9 +100,9 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
             <div className="text-xs text-[#6B7280]">{description.length}/500 characters</div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-[#4B5563]">
+            <Label className="text-sm font-medium text-[#4B5563]">
               Date *
-            </label>
+            </Label>
             <div className="relative">
               <DatePicker
                 selected={date}
@@ -117,9 +118,9 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="time" className="text-sm font-medium text-[#4B5563]">
+            <Label htmlFor="time" className="text-sm font-medium text-[#4B5563]">
               Time (optional)
-            </label>
+            </Label>
             <Input
               type="time"
               id="time"
