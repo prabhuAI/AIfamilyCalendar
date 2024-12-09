@@ -26,11 +26,10 @@ const mapDatabaseEventToFamilyEvent = (event: any): FamilyEvent => ({
 // Helper function to fetch events from database
 const fetchEvents = async (familyId: string) => {
   const user = await getCurrentUser();
-  console.log('Fetching events for user:', user.id);
   
   const { data, error } = await supabase
     .from('family_calendar')
-    .select('id, event_name, event_description, start_time, end_time, created_at, user_id, family_id')
+    .select('*')
     .eq('family_id', familyId)
     .eq('user_id', user.id)
     .order('start_time', { ascending: true });
@@ -40,7 +39,6 @@ const fetchEvents = async (familyId: string) => {
     throw error;
   }
 
-  console.log('Fetched events:', data);
   return (data || []).map(mapDatabaseEventToFamilyEvent);
 };
 
