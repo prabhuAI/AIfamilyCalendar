@@ -25,6 +25,7 @@ export const useFamilyData = () => {
 
         // If user has no family, create one
         if (!familyMembers || familyMembers.length === 0) {
+          console.log('No family found, creating new family...');
           const newFamily = await createNewFamily(user.id);
           await createFamilyMember(newFamily.id, user.id);
           return { familyId: newFamily.id, members: [] };
@@ -35,8 +36,9 @@ export const useFamilyData = () => {
 
         // Get all members of the family
         const members = await getFamilyMembers(familyId);
+        // It's okay if members is empty, we'll return an empty array
+        return { familyId, members: members || [] };
 
-        return { familyId, members };
       } catch (error: any) {
         console.error('Error in family data fetch:', error);
         toast({

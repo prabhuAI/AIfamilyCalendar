@@ -15,7 +15,7 @@ export function FamilyMembers() {
       </div>
       <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
         {!familyData?.members || familyData.members.length === 0 ? (
-          <p className="text-[#8E8E93] text-center py-4">No family members yet</p>
+          <p className="text-[#8E8E93] text-center py-4">No family members yet. You can invite members to join your family.</p>
         ) : (
           familyData.members.map((member: any) => (
             <MemberCard
