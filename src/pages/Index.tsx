@@ -33,13 +33,11 @@ const Index = () => {
           return;
         }
 
-        // Show welcome toast
         toast({
           title: "Welcome back!",
-          duration: 2000, // 2 seconds
+          duration: 2000,
         });
 
-        // Verify the user exists
         const { data: user, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
           console.error("User verification error:", userError);
@@ -136,6 +134,7 @@ const Index = () => {
             setIsUpcomingOpen={setIsUpcomingOpen}
             setIsPastOpen={setIsPastOpen}
             onDelete={deleteEvent}
+            onAddEvent={addEvent}
           />
         </div>
       </div>

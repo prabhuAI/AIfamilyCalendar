@@ -2,6 +2,7 @@ import { FamilyEvent } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { AIEventsDialog } from "./AIEventsDialog";
 
 interface EventSectionsProps {
   todayEvents: FamilyEvent[];
@@ -12,6 +13,7 @@ interface EventSectionsProps {
   setIsUpcomingOpen: (value: boolean) => void;
   setIsPastOpen: (value: boolean) => void;
   onDelete: (id: string) => void;
+  onAddEvent: (event: any) => void;
 }
 
 export function EventSections({
@@ -23,6 +25,7 @@ export function EventSections({
   setIsUpcomingOpen,
   setIsPastOpen,
   onDelete,
+  onAddEvent,
 }: EventSectionsProps) {
   return (
     <div className="space-y-3 md:space-y-4">
@@ -87,6 +90,9 @@ export function EventSections({
           )}
         </CollapsibleContent>
       </Collapsible>
+
+      {/* AI Events Button */}
+      <AIEventsDialog onAddEvent={onAddEvent} />
     </div>
   );
 }
