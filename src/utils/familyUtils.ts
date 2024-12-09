@@ -21,7 +21,8 @@ export const getFamilyMember = async (userId: string) => {
     const { data, error } = await supabase
       .from('family_members')
       .select('family_id')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .maybeSingle(); // Using maybeSingle() instead of single() to handle no results case
 
     console.log('Family member query result:', { data, error });
     
@@ -30,14 +31,7 @@ export const getFamilyMember = async (userId: string) => {
       return { familyMembers: null, error };
     }
     
-    // If no family member found, return null without error
-    if (!data || data.length === 0) {
-      console.log('No family member found, will create new family');
-      return { familyMembers: null, error: null };
-    }
-    
-    // Return the first family member
-    return { familyMembers: data[0], error: null };
+    return { familyMembers: data, error: null };
   } catch (error) {
     console.error('Exception in getFamilyMember:', error);
     return { familyMembers: null, error };
