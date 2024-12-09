@@ -6,12 +6,14 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AuthChangeEvent } from "@supabase/supabase-js";
 import { SignUpForm } from "@/components/SignUpForm";
+import { ForgotPassword } from "@/components/ForgotPassword";
 import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -40,6 +42,19 @@ const Login = () => {
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-[#F2F2F7] flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm p-8">
+          <h1 className="text-2xl font-semibold text-center mb-8 text-[#1C1C1E]">
+            Reset Password
+          </h1>
+          <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+        </div>
+      </div>
+    );
+  }
 
   if (showSignUp) {
     return (
@@ -84,14 +99,24 @@ const Login = () => {
           view="sign_in"
           showLinks={false}
         />
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full mt-4"
-          onClick={() => setShowSignUp(true)}
-        >
-          Create Account
-        </Button>
+        <div className="space-y-4 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowSignUp(true)}
+          >
+            Create Account
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="w-full text-sm text-gray-600"
+            onClick={() => setShowForgotPassword(true)}
+          >
+            Forgot Password?
+          </Button>
+        </div>
       </div>
     </div>
   );

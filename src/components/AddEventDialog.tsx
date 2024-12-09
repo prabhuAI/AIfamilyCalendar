@@ -72,9 +72,9 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium text-[#4B5563]">
+            <Label htmlFor="title" className="text-sm font-medium text-[#4B5563]">
               Title *
-            </label>
+            </Label>
             <Input
               id="title"
               value={title}
@@ -86,17 +86,17 @@ export function AddEventDialog({ onAddEvent }: AddEventDialogProps) {
             <div className="text-xs text-[#6B7280]">{title.length}/50 characters</div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium text-[#4B5563]">
+            <Label htmlFor="description" className="text-sm font-medium text-[#4B5563]">
               Description
-            </label>
+            </Label>
             <Textarea
               id="description"
               value={description}
-              onChange={(e) => setDescription(e.target.value.slice(0, 100))}
-              maxLength={100}
+              onChange={(e) => setDescription(e.target.value.slice(0, 500))}
+              maxLength={500}
               className="rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] min-h-[100px] transition-all duration-200"
             />
-            <div className="text-xs text-[#6B7280]">{description.length}/100 characters</div>
+            <div className="text-xs text-[#6B7280]">{description.length}/500 characters</div>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#4B5563]">

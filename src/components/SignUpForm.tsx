@@ -9,8 +9,11 @@ import { useToast } from "@/components/ui/use-toast";
 export const SignUpForm = ({ onBack }: { onBack: () => void }) => {
   const [fullName, setFullName] = useState("");
   const [nickname, setNickname] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isFullNameValid, setIsFullNameValid] = useState(false);
   const [isNicknameValid, setIsNicknameValid] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
   const { toast } = useToast();
 
   const validateFullName = (name: string) => {
@@ -29,19 +32,22 @@ export const SignUpForm = ({ onBack }: { onBack: () => void }) => {
     setIsNicknameValid(validateNickname(nickname));
   }, [nickname]);
 
+  useEffect(() => {
+    setPasswordsMatch(password === confirmPassword && password.length > 0);
+  }, [password, confirmPassword]);
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFullNameValid || !isNicknameValid) {
+    if (!isFullNameValid || !isNicknameValid || !passwordsMatch) {
       toast({
         title: "Validation Error",
-        description: "Please check the name and nickname requirements",
+        description: "Please check all requirements",
         variant: "destructive",
       });
       return;
     }
 
     const email = (e.target as any).email.value;
-    const password = (e.target as any).password.value;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -109,7 +115,30 @@ export const SignUpForm = ({ onBack }: { onBack: () => void }) => {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" required />
+        <Input 
+          id="password" 
+          type="password" 
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required 
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="confirmPassword">
+          Confirm Password
+          {password && confirmPassword && (
+            passwordsMatch ? 
+              <Check className="inline-block ml-2 h-4 w-4 text-green-500" /> : 
+              <X className="inline-block ml-2 h-4 w-4 text-red-500" />
+          )}
+        </Label>
+        <Input 
+          id="confirmPassword" 
+          type="password" 
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required 
+        />
       </div>
       <Button type="submit" className="w-full">
         Sign Up

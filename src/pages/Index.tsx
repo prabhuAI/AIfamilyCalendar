@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Header } from "@/components/Header";
 import { EventSections } from "@/components/EventSections";
+import { FamilyMembers } from "@/components/FamilyMembers";
 import { useEvents } from "@/hooks/useEvents";
 import { useNotifications } from "@/hooks/useNotifications";
 
@@ -15,7 +16,6 @@ const Index = () => {
   const { todayEvents, upcomingEvents, pastEvents, addEvent, deleteEvent } = useEvents();
   const { notifications, markAsRead } = useNotifications();
 
-  // Check session on mount
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -67,16 +67,19 @@ const Index = () => {
           onMarkAsRead={handleMarkAsRead}
           onAddEvent={addEvent}
         />
-        <EventSections
-          todayEvents={todayEvents}
-          upcomingEvents={upcomingEvents}
-          pastEvents={pastEvents}
-          isUpcomingOpen={isUpcomingOpen}
-          isPastOpen={isPastOpen}
-          setIsUpcomingOpen={setIsUpcomingOpen}
-          setIsPastOpen={setIsPastOpen}
-          onDelete={deleteEvent}
-        />
+        <div className="space-y-8">
+          <EventSections
+            todayEvents={todayEvents}
+            upcomingEvents={upcomingEvents}
+            pastEvents={pastEvents}
+            isUpcomingOpen={isUpcomingOpen}
+            isPastOpen={isPastOpen}
+            setIsUpcomingOpen={setIsUpcomingOpen}
+            setIsPastOpen={setIsPastOpen}
+            onDelete={deleteEvent}
+          />
+          <FamilyMembers />
+        </div>
       </div>
     </div>
   );
