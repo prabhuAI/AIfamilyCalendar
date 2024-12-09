@@ -89,6 +89,33 @@ export type Database = {
           },
         ]
       }
+      groceries: {
+        Row: {
+          buy_by_date: string | null
+          created_at: string
+          id: string
+          is_completed: boolean | null
+          item_name: string
+          user_id: string
+        }
+        Insert: {
+          buy_by_date?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          item_name: string
+          user_id: string
+        }
+        Update: {
+          buy_by_date?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean | null
+          item_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           browser_notifications: boolean | null
@@ -145,6 +172,36 @@ export type Database = {
           },
         ]
       }
+      payment_reminders: {
+        Row: {
+          amount: number | null
+          created_at: string
+          due_date: string
+          id: string
+          is_completed: boolean | null
+          payment_description: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          due_date: string
+          id?: string
+          is_completed?: boolean | null
+          payment_description: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          due_date?: string
+          id?: string
+          is_completed?: boolean | null
+          payment_description?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -163,6 +220,33 @@ export type Database = {
           full_name?: string
           id?: string
           nickname?: string
+        }
+        Relationships: []
+      }
+      todos: {
+        Row: {
+          created_at: string
+          due_date: string | null
+          id: string
+          is_completed: boolean | null
+          task: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          task: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_completed?: boolean | null
+          task?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -8,6 +8,9 @@ import { SessionContextProvider, useSession } from "@supabase/auth-helpers-react
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import Groceries from "./pages/Groceries";
+import Todos from "./pages/Todos";
+import PaymentReminders from "./pages/PaymentReminders";
 import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient({
@@ -15,7 +18,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      throwOnError: false, // Changed to false to prevent uncaught errors
+      throwOnError: false,
       retryDelay: 1000,
     },
   },
@@ -89,6 +92,30 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <Index />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/groceries"
+                element={
+                  <ProtectedRoute>
+                    <Groceries />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/todos"
+                element={
+                  <ProtectedRoute>
+                    <Todos />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/payment-reminders"
+                element={
+                  <ProtectedRoute>
+                    <PaymentReminders />
                   </ProtectedRoute>
                 }
               />
