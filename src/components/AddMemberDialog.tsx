@@ -13,7 +13,8 @@ interface AddMemberDialogProps {
 }
 
 export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
-  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { familyData } = useFamilyData();
@@ -29,17 +30,29 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
       return;
     }
 
+    if (fullName.length > 12) {
+      toast({
+        title: "Error",
+        description: "Full name must be 12 characters or less",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // First, get the user ID from the email
-      const { data: userData, error: userError } = await supabase
+      // First create a new user profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
+        .insert([{
+          full_name: fullName,
+          nickname: nickname || fullName.substring(0, Math.min(fullName.length, 6))
+        }])
         .select('id')
-        .eq('email', email)
         .single();
 
-      if (userError || !userData) {
-        throw new Error('User not found');
+      if (profileError) {
+        throw new Error('Failed to create profile');
       }
 
       // Add the user to the family
@@ -47,7 +60,7 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         .from('family_members')
         .insert({
           family_id: familyData.familyId,
-          user_id: userData.id
+          user_id: profileData.id
         });
 
       if (memberError) {
@@ -59,8 +72,10 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         description: "Family member added successfully",
       });
       onOpenChange(false);
-      setEmail("");
+      setFullName("");
+      setNickname("");
     } catch (error: any) {
+      console.error('Error adding family member:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to add family member",
@@ -79,14 +94,24 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="fullName">Full Name (max 12 characters)</Label>
             <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter member's email"
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Enter member's full name"
+              maxLength={12}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="nickname">Nickname (optional, max 6 characters)</Label>
+            <Input
+              id="nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="Enter nickname"
+              maxLength={6}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
