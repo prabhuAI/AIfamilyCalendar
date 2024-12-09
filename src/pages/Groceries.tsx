@@ -32,9 +32,15 @@ const Groceries = () => {
 
   const addGroceryMutation = useMutation({
     mutationFn: async (newGrocery: { item_name: string; buy_by_date: string | null }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       const { data, error } = await supabase
         .from('groceries')
-        .insert([newGrocery])
+        .insert([{
+          ...newGrocery,
+          user_id: user.id
+        }])
         .select()
         .single();
       
@@ -93,7 +99,7 @@ const Groceries = () => {
           />
           <DatePicker
             selected={buyByDate}
-            onChange={(date) => setBuyByDate(date)}
+            onChange={(date: Date) => setBuyByDate(date)}
             placeholderText="Buy by date"
             className="px-3 py-2 border rounded-md"
           />

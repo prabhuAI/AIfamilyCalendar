@@ -37,9 +37,15 @@ const PaymentReminders = () => {
       amount: number;
       due_date: string;
     }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       const { data, error } = await supabase
         .from('payment_reminders')
-        .insert([newPayment])
+        .insert([{
+          ...newPayment,
+          user_id: user.id
+        }])
         .select()
         .single();
       
@@ -118,7 +124,7 @@ const PaymentReminders = () => {
           />
           <DatePicker
             selected={dueDate}
-            onChange={(date) => setDueDate(date)}
+            onChange={(date: Date) => setDueDate(date)}
             placeholderText="Due date"
             className="px-3 py-2 border rounded-md"
           />
