@@ -14,10 +14,13 @@ const Login = () => {
     try {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { error } = await supabase
           .from('notification_preferences')
           .upsert({ 
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: user.id,
             browser_notifications: true 
           });
         
