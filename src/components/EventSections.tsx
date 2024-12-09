@@ -29,6 +29,9 @@ export function EventSections({
 }: EventSectionsProps) {
   return (
     <div className="space-y-3 md:space-y-4">
+      {/* AI Events Button */}
+      <AIEventsDialog onAddEvent={onAddEvent} />
+
       {/* Today's Events */}
       <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
         <h2 className="text-lg md:text-xl font-semibold text-[#1C1C1E]">Today's Events</h2>
@@ -90,9 +93,6 @@ export function EventSections({
           )}
         </CollapsibleContent>
       </Collapsible>
-
-      {/* AI Events Button */}
-      <AIEventsDialog onAddEvent={onAddEvent} />
     </div>
   );
 }
