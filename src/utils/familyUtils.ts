@@ -21,22 +21,23 @@ export const getFamilyMember = async (userId: string) => {
     const { data, error } = await supabase
       .from('family_members')
       .select('family_id')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
     console.log('Family member query result:', { data, error });
-    
-    if (error && error.code === 'PGRST116') {
-      console.log('No family member found, will create new family');
-      return { familyMembers: null, error: null };
-    }
     
     if (error) {
       console.error('Error fetching family member:', error);
       return { familyMembers: null, error };
     }
     
-    return { familyMembers: data, error: null };
+    // If no family member found, return null without error
+    if (!data || data.length === 0) {
+      console.log('No family member found, will create new family');
+      return { familyMembers: null, error: null };
+    }
+    
+    // Return the first family member
+    return { familyMembers: data[0], error: null };
   } catch (error) {
     console.error('Exception in getFamilyMember:', error);
     return { familyMembers: null, error };
