@@ -16,29 +16,29 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
   const [nickname, setNickname] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { familyData } = useFamilyData();
+  const { familyData, refetch } = useFamilyData();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       if (!user) throw new Error('Not authenticated');
 
       // If no family exists, create one first
       let familyId = familyData?.familyId;
+      
       if (!familyId) {
         const { data: newFamily, error: familyError } = await supabase
           .from('families')
           .insert([{ family_name: 'My Family' }])
-          .select('id')
+          .select()
           .single();
 
-        if (familyError) {
-          console.error('Error creating family:', familyError);
-          throw familyError;
-        }
+        if (familyError) throw familyError;
+        if (!newFamily) throw new Error('Failed to create family');
         
         familyId = newFamily.id;
 
@@ -50,10 +50,7 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
             user_id: user.id
           }]);
 
-        if (memberError) {
-          console.error('Error creating family member:', memberError);
-          throw memberError;
-        }
+        if (memberError) throw memberError;
       }
 
       // Generate a unique ID for the new profile
@@ -62,34 +59,32 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
       // Create profile for the new member
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .insert([{
           id: newProfileId,
           full_name: nickname,
           nickname: nickname
-        });
+        }]);
 
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        throw profileError;
-      }
+      if (profileError) throw profileError;
 
       // Add the new member to the family
       const { error: memberError } = await supabase
         .from('family_members')
-        .insert({
+        .insert([{
           family_id: familyId,
           user_id: newProfileId
-        });
+        }]);
 
-      if (memberError) {
-        console.error('Error adding family member:', memberError);
-        throw memberError;
-      }
+      if (memberError) throw memberError;
 
       toast({
         title: "Success",
         description: "Family member added successfully",
       });
+      
+      // Refetch family data to update the UI
+      await refetch();
+      
       onOpenChange(false);
       setNickname("");
     } catch (error: any) {
