@@ -9,9 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wand2, Mic, MicOff } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { MicrophoneButton } from "./MicrophoneButton";
 
 interface AIEventsDialogProps {
   onAddEvent: (event: any) => void;
@@ -23,89 +24,6 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
   const [isListening, setIsListening] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-
-  const startListening = () => {
-    // Check for different Speech Recognition APIs
-    const SpeechRecognition = (window as any).SpeechRecognition || 
-                             (window as any).webkitSpeechRecognition ||
-                             (window as any).mozSpeechRecognition ||
-                             (window as any).msSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      toast({
-        title: "Error",
-        description: "Speech recognition is not supported in your browser. Please try using Chrome on desktop or Android.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US'; // Set language to English
-
-      recognition.onstart = () => {
-        setIsListening(true);
-        toast({
-          title: "Listening",
-          description: "Speak now...",
-        });
-      };
-
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setPrompt(transcript);
-        setIsListening(false);
-        toast({
-          title: "Success",
-          description: "Speech captured successfully!",
-        });
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        
-        let errorMessage = "Failed to recognize speech. ";
-        switch (event.error) {
-          case 'network':
-            errorMessage += "Please check your internet connection.";
-            break;
-          case 'not-allowed':
-          case 'permission-denied':
-            errorMessage += "Microphone permission was denied.";
-            break;
-          case 'no-speech':
-            errorMessage += "No speech was detected.";
-            break;
-          default:
-            errorMessage += "Please try again.";
-        }
-
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.start();
-    } catch (error) {
-      console.error('Speech recognition initialization error:', error);
-      setIsListening(false);
-      toast({
-        title: "Error",
-        description: "Failed to initialize speech recognition. Please try a different browser.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleGenerateEvents = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,18 +110,11 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
                 required
                 className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
               />
-              <Button
-                type="button"
-                onClick={startListening}
-                disabled={isListening}
-                className="bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#374151] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-xl transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]"
-              >
-                {isListening ? (
-                  <MicOff className="h-5 w-5" />
-                ) : (
-                  <Mic className="h-5 w-5" />
-                )}
-              </Button>
+              <MicrophoneButton
+                isListening={isListening}
+                setIsListening={setIsListening}
+                onTranscript={setPrompt}
+              />
             </div>
           </div>
           <Button
