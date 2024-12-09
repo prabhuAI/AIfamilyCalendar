@@ -4,7 +4,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthChangeEvent } from "@supabase/supabase-js";
+import { AuthChangeEvent, AuthError } from "@supabase/supabase-js";
 import { SignUpForm } from "@/components/SignUpForm";
 import { ForgotPassword } from "@/components/ForgotPassword";
 import { Button } from "@/components/ui/button";
@@ -34,12 +34,49 @@ const Login = () => {
             title: "Welcome!",
             description: "You have successfully signed in.",
           });
+        } else if (event === 'USER_DELETED') {
+          toast({
+            title: "Account Deleted",
+            description: "Your account has been successfully deleted.",
+            variant: "destructive",
+          });
         }
       }
     );
 
+    // Set up auth error listener
+    const handleAuthError = (error: AuthError) => {
+      console.error('Auth error:', error);
+      let errorMessage = "An error occurred during authentication.";
+      
+      // Handle specific error cases
+      if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please verify your email address before logging in.";
+      } else if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message.includes("Email rate limit exceeded")) {
+        errorMessage = "Too many attempts. Please try again later.";
+      } else if (error.message.includes("Password is too short")) {
+        errorMessage = "Password must be at least 6 characters long.";
+      }
+
+      toast({
+        title: "Authentication Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    };
+
+    // Subscribe to auth error events
+    const authErrorSubscription = supabase.auth.onAuthStateChange((event, session, error) => {
+      if (error) {
+        handleAuthError(error);
+      }
+    });
+
     return () => {
       subscription.unsubscribe();
+      authErrorSubscription.data.subscription.unsubscribe();
     };
   }, [navigate, toast]);
 
