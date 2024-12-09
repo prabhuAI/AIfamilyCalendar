@@ -12,13 +12,13 @@ import { useState } from "react";
 import { UserRound } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { useFamilyData } from "@/hooks/useFamily";
 
 export function ProfileDropdown() {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [memberName, setMemberName] = useState("");
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { addMember } = useFamilyData();
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -36,59 +36,9 @@ export function ProfileDropdown() {
     }
   });
 
-  const addMember = useMutation({
-    mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
-      const { data: familyMember } = await supabase
-        .from('family_members')
-        .select('family_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!familyMember) throw new Error('No family found');
-
-      const { error: memberError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: user.id,
-          full_name: memberName,
-          nickname: memberName
-        }]);
-
-      if (memberError) throw memberError;
-
-      const { error: familyError } = await supabase
-        .from('family_members')
-        .insert([{
-          family_id: familyMember.family_id,
-          user_id: user.id
-        }]);
-
-      if (familyError) throw familyError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['family'] });
-      setMemberName("");
-      setIsAddMemberOpen(false);
-      toast({
-        title: "Success",
-        description: "Family member added successfully",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addMember.mutate();
+    addMember.mutate(memberName);
   };
 
   return (
