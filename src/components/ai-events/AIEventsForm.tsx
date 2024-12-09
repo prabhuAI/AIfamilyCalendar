@@ -29,24 +29,6 @@ export function AIEventsForm({
     inputRef.current?.focus();
   };
 
-  // Focus input when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // Only scroll into view if the input is focused
-        if (document.activeElement === inputRef.current) {
-          inputRef.current.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }
-      }
-    }, 100); // Reduced timeout for faster response
-
-    return () => clearTimeout(timer);
-  }, []);
-
   // Handle input focus
   const handleInputFocus = () => {
     setTimeout(() => {
