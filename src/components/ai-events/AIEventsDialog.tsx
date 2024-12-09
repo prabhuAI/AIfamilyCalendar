@@ -102,7 +102,12 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
             'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]'
           }
           max-h-[80vh] overflow-y-auto
+          transition-all duration-300
         `}
+        style={{
+          transform: isMobile ? 'translate(-50%, 0)' : 'translate(-50%, -50%)',
+          WebkitTransform: isMobile ? 'translate(-50%, 0)' : 'translate(-50%, -50%)',
+        }}
       >
         <DialogHeader>
           <DialogTitle className="text-[#374151] text-xl font-semibold">Generate Events with AI</DialogTitle>
