@@ -14,13 +14,17 @@ export function EventCard({ event, onDelete }: EventCardProps) {
     const today = new Date();
     const eventDate = new Date(date);
     
-    if (format(today, 'yyyy-MM-dd') === format(eventDate, 'yyyy-MM-dd')) {
+    // Remove any timestamp info for date comparison
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const eventStr = format(eventDate, 'yyyy-MM-dd');
+    
+    if (todayStr === eventStr) {
       return `Today at ${format(eventDate, 'h:mm a')}`;
     }
     
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    if (format(tomorrow, 'yyyy-MM-dd') === format(eventDate, 'yyyy-MM-dd')) {
+    if (format(tomorrow, 'yyyy-MM-dd') === eventStr) {
       return `Tomorrow at ${format(eventDate, 'h:mm a')}`;
     }
     
@@ -47,7 +51,7 @@ export function EventCard({ event, onDelete }: EventCardProps) {
       <CardContent className="px-4 pb-4">
         <div className="flex items-center text-sm text-[#6B7280] mb-2">
           <Clock className="h-4 w-4 mr-1.5 text-[#9CA3AF]" />
-          {formatDate(new Date(event.date))}
+          {formatDate(event.date)}
         </div>
         <p className="text-sm text-[#4B5563] line-clamp-2">{event.description}</p>
       </CardContent>

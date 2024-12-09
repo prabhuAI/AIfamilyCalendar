@@ -3,12 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { FamilyEvent } from "@/types/event";
-import { isToday, startOfDay, endOfDay, isAfter, isBefore } from "date-fns";
+import { isToday, startOfDay, endOfDay, isAfter, isBefore, isSameDay } from "date-fns";
 import { Database } from "@/integrations/supabase/types";
 
 type Event = Database['public']['Tables']['family_calendar']['Row'];
 
-// Helper function to fetch user
 const getCurrentUser = async () => {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error) throw error;
@@ -46,7 +45,6 @@ const fetchEvents = async () => {
   return (data || []).map(mapDatabaseEventToFamilyEvent);
 };
 
-// Helper function to filter events by time
 const filterEventsByTime = (events: FamilyEvent[]) => {
   const now = new Date();
   const todayStart = startOfDay(now);
@@ -57,7 +55,7 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
   const todayEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      const isEventToday = isToday(eventDate);
+      const isEventToday = isSameDay(eventDate, now);
       console.log('Event:', event.title, 'Date:', eventDate, 'Is Today:', isEventToday);
       return isEventToday;
     })
@@ -66,8 +64,7 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
   const upcomingEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      // If it's not today and it's after today's start, it's upcoming
-      const isUpcoming = !isToday(eventDate) && isAfter(eventDate, todayStart);
+      const isUpcoming = isAfter(eventDate, todayEnd);
       console.log('Event:', event.title, 'Date:', eventDate, 'Is Upcoming:', isUpcoming);
       return isUpcoming;
     })
@@ -76,8 +73,7 @@ const filterEventsByTime = (events: FamilyEvent[]) => {
   const pastEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
-      // If it's before today's start, it's in the past
-      const isPast = isBefore(eventDate, todayStart);
+      const isPast = isBefore(eventDate, todayStart) && !isSameDay(eventDate, now);
       console.log('Event:', event.title, 'Date:', eventDate, 'Is Past:', isPast);
       return isPast;
     })
