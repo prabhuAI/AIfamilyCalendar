@@ -36,11 +36,16 @@ serve(async (req) => {
           {
             role: 'system',
             content: `You are a helpful assistant that generates calendar events. 
-            Return ONLY a JSON array of events with title, description, and date fields. 
-            Generate realistic dates in the next few days. 
-            Example format: [{"title": "Family Dinner", "description": "Weekly family dinner at home", "date": "2024-12-10T18:00:00Z"}]`
+            Return ONLY a JSON array of events with title, description, and date fields.
+            When "today" is mentioned in the prompt, use the current date.
+            When a specific time is mentioned, use that time, otherwise use the current time.
+            Example format: [{"title": "Family Dinner", "description": "Weekly family dinner at home", "date": "2024-12-10T18:00:00Z"}]
+            IMPORTANT: Always use the CURRENT date when "today" is mentioned in the prompt.`
           },
-          { role: 'user', content: prompt }
+          { 
+            role: 'user', 
+            content: `Current date and time is ${new Date().toISOString()}. Generate events for: ${prompt}`
+          }
         ],
       }),
     });
@@ -60,6 +65,18 @@ serve(async (req) => {
     try {
       events = JSON.parse(data.choices[0].message.content);
       console.log('Parsed events:', events);
+
+      // Ensure dates are properly set to today when needed
+      events = events.map(event => {
+        if (prompt.toLowerCase().includes('today')) {
+          const today = new Date();
+          const eventTime = new Date(event.date);
+          today.setHours(eventTime.getHours(), eventTime.getMinutes());
+          event.date = today.toISOString();
+        }
+        return event;
+      });
+
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
       throw new Error('Failed to parse generated events. The AI response was not in the expected format.');
