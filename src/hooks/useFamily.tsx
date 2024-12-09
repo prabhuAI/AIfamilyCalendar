@@ -26,13 +26,7 @@ export const useFamilyData = () => {
 
         console.log('Family members query result:', { familyMembers, memberError });
 
-        // Handle case when no family members are found
-        if (memberError && memberError.code !== 'PGRST116') {
-          console.error('Error fetching family members:', memberError);
-          throw memberError;
-        }
-
-        // If user has no family or no family members found, create one
+        // If user has no family, create one
         if (!familyMembers || familyMembers.length === 0) {
           console.log("No family found, creating new family");
           
@@ -96,7 +90,8 @@ export const useFamilyData = () => {
         throw error;
       }
     },
-    retry: 1
+    retry: 1,
+    retryDelay: 1000
   });
 
   const removeMember = useMutation({
