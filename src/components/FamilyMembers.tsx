@@ -25,15 +25,15 @@ export function FamilyMembers() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const { data: familyMember, error: memberError } = await supabase
+      const { data: familyMembers, error: memberError } = await supabase
         .from('family_members')
         .select('family_id')
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
       if (memberError) throw memberError;
 
-      if (!familyMember) {
+      // If user has no family, create one
+      if (!familyMembers || familyMembers.length === 0) {
         const { data: newFamily, error: familyError } = await supabase
           .from('families')
           .insert([{ family_name: 'My Family' }])
@@ -49,17 +49,19 @@ export function FamilyMembers() {
         return { familyId: newFamily.id, members: [] };
       }
 
+      const familyId = familyMembers[0].family_id;
+
       const { data: members, error: membersError } = await supabase
         .from('family_members')
         .select(`
           user_id,
           profiles:profiles(full_name, nickname)
         `)
-        .eq('family_id', familyMember.family_id);
+        .eq('family_id', familyId);
 
       if (membersError) throw membersError;
 
-      return { familyId: familyMember.family_id, members };
+      return { familyId, members };
     }
   });
 
