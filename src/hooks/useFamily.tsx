@@ -28,7 +28,7 @@ export const useFamilyData = () => {
         }
 
         // If user has no family, create one
-        if (!familyMembers || familyMembers.length === 0) {
+        if (!familyMembers) {
           console.log('No family found, creating new family...');
           try {
             const newFamily = await createNewFamily(user.id);
@@ -39,7 +39,7 @@ export const useFamilyData = () => {
           }
         }
 
-        const familyId = familyMembers[0].family_id;
+        const familyId = familyMembers.family_id;
         console.log('Found family ID:', familyId);
 
         // Get all members of the family
@@ -52,13 +52,11 @@ export const useFamilyData = () => {
         }
       } catch (error: any) {
         console.error('Error in family data fetch:', error);
-        // Return a safe default state instead of throwing
         return { familyId: null, members: [] };
       }
     },
     retry: 1,
     retryDelay: 1000,
-    // Add this to prevent uncaught errors
     throwOnError: false
   });
 

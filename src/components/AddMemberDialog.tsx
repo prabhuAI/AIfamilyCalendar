@@ -42,12 +42,16 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
     setIsLoading(true);
     try {
       // First create a new user profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .insert([{
+        .insert({
+          id: user.id,
           full_name: fullName,
           nickname: nickname || fullName.substring(0, Math.min(fullName.length, 6))
-        }])
+        })
         .select('id')
         .single();
 
