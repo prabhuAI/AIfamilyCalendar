@@ -27,6 +27,8 @@ export function EventSections({
   onDelete,
   onAddEvent,
 }: EventSectionsProps) {
+  const [isTodayOpen, setIsTodayOpen] = useState(false);
+
   return (
     <div className="space-y-2">
       {/* AI Events Button */}
@@ -38,8 +40,8 @@ export function EventSections({
       <EventSection
         title="Today's Events"
         events={todayEvents}
-        isOpen={false}
-        onOpenChange={() => {}}
+        isOpen={isTodayOpen}
+        onOpenChange={setIsTodayOpen}
         onDelete={onDelete}
         emptyMessage="No events scheduled for today"
       />
