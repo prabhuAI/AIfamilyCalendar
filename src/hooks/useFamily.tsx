@@ -19,16 +19,16 @@ export const useFamilyData = () => {
         .from('family_members')
         .select('family_id')
         .eq('user_id', user.id)
-        .limit(1)
-        .single();
+        .limit(1);
 
+      // Handle case when no family members are found
       if (memberError && memberError.code !== 'PGRST116') {
         console.error('Error fetching family members:', memberError);
         throw memberError;
       }
 
-      // If user has no family, create one
-      if (!familyMembers) {
+      // If user has no family or no family members found, create one
+      if (!familyMembers || familyMembers.length === 0) {
         console.log("No family found, creating new family");
         
         // First create the family
@@ -61,7 +61,7 @@ export const useFamilyData = () => {
         return { familyId: newFamily.id, members: [] };
       }
 
-      const familyId = familyMembers.family_id;
+      const familyId = familyMembers[0].family_id;
       console.log('Found family ID:', familyId);
 
       // Get all members of the family
