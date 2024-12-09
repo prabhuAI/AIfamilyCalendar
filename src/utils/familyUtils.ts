@@ -18,20 +18,20 @@ export const getCurrentUser = async () => {
 export const getFamilyMember = async (userId: string) => {
   console.log('Fetching family member for user:', userId);
   try {
-    const { data: familyMembers, error } = await supabase
+    const { data, error } = await supabase
       .from('family_members')
       .select('family_id')
-      .eq('user_id', userId)
-      .maybeSingle(); // Use maybeSingle to handle no results case
+      .eq('user_id', userId);
 
-    console.log('Family member query result:', { familyMembers, error });
+    console.log('Family member query result:', { data, error });
     
     if (error) {
       console.error('Error fetching family member:', error);
       return { familyMembers: null, error };
     }
     
-    return { familyMembers, error: null };
+    // Return the first member if exists, otherwise null
+    return { familyMembers: data?.[0] || null, error: null };
   } catch (error) {
     console.error('Exception in getFamilyMember:', error);
     return { familyMembers: null, error };
@@ -41,8 +41,11 @@ export const getFamilyMember = async (userId: string) => {
 export const createNewFamily = async (userId: string) => {
   console.log("Creating new family for user:", userId);
   
+  const { data: user } = await supabase.auth.getUser();
+  if (!user) throw new Error('No authenticated user found');
+  
   try {
-    // First create the family with a default name
+    // First create the family
     const { data: family, error: familyError } = await supabase
       .from('families')
       .insert([{ 
@@ -60,6 +63,8 @@ export const createNewFamily = async (userId: string) => {
       throw new Error('No data returned from family creation');
     }
 
+    console.log("Created family:", family);
+
     // Then create the family member association
     const { error: memberError } = await supabase
       .from('family_members')
@@ -75,6 +80,7 @@ export const createNewFamily = async (userId: string) => {
       throw memberError;
     }
 
+    console.log("Successfully created family and member association");
     return family;
   } catch (error) {
     console.error('Exception in createNewFamily:', error);
