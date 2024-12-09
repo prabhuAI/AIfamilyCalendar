@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      throwOnError: true,
+      throwOnError: false, // Changed to false to prevent uncaught errors
       retryDelay: 1000,
     },
   },
@@ -27,11 +27,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      setIsLoading(false);
-      
-      if (!currentSession) {
-        console.log("No active session found in ProtectedRoute");
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!currentSession) {
+          console.log("No active session found in ProtectedRoute");
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -39,11 +43,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (isLoading) {
-    return null; // or a loading spinner
+    return null;
   }
 
   if (!session) {
-    console.log("No session found, redirecting to login");
     return <Navigate to="/login" />;
   }
 
@@ -55,42 +58,45 @@ const App = () => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Initial session state:", session ? "Session exists" : "No session");
-      setInitialized(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session state:", session ? "Session exists" : "No session");
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        setInitialized(true);
+      }
     };
 
     initializeAuth();
   }, []);
 
   if (!initialized) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <SessionContextProvider supabaseClient={supabase}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </SessionContextProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider supabaseClient={supabase}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Index />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 };
 

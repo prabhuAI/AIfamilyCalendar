@@ -39,11 +39,10 @@ const Index = () => {
         });
         return;
       }
+      // Clear any cached data
+      localStorage.clear();
+      sessionStorage.clear();
       navigate('/login');
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account.",
-      });
     } catch (error: any) {
       console.error("Unexpected error during logout:", error);
       toast({
