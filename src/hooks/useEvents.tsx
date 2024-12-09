@@ -31,7 +31,8 @@ const fetchEvents = async (familyId: string) => {
     .from('family_calendar')
     .select('*')
     .eq('family_id', familyId)
-    .eq('user_id', user.id);
+    .eq('user_id', user.id)
+    .order('start_time', { ascending: true });
 
   if (error) {
     console.error('Error fetching events:', error);
