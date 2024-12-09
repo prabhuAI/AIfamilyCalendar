@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserPlus, UserMinus } from "lucide-react";
+import { User } from '@supabase/supabase-js';
 
 interface AddMemberData {
   email: string;
@@ -67,7 +68,7 @@ export function FamilyMembers() {
       const { data: { users }, error: userError } = await supabase.auth.admin.listUsers();
       if (userError) throw userError;
 
-      const user = users.find(u => u.email === data.email);
+      const user = (users as User[]).find(u => u.email === data.email);
       if (!user) throw new Error('User not found');
 
       const { error: memberError } = await supabase
