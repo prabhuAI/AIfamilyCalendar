@@ -98,7 +98,7 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
           shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] 
           border-none p-6 
           ${isMobile ? 
-            'fixed bottom-0 left-[50%] translate-x-[-50%] translate-y-0 rounded-t-3xl rounded-b-none' : 
+            'fixed top-0 left-[50%] translate-x-[-50%] translate-y-0 rounded-b-3xl rounded-t-none' : 
             'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]'
           }
           max-h-[80vh] overflow-y-auto
