@@ -93,14 +93,10 @@ export const useFamilyData = () => {
       return { familyId, members };
     },
     retry: 1,
-    onError: (error: any) => {
-      console.error('Error in family data query:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load family data. Please try again.",
-        variant: "destructive",
-      });
-    }
+    meta: {
+      errorMessage: "Failed to load family data. Please try again."
+    },
+    throwOnError: true
   });
 
   const removeMember = useMutation({
