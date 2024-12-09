@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wand2 } from "lucide-react";
+import { Wand2, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MicrophoneButton } from "./MicrophoneButton";
@@ -81,6 +81,10 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
     }
   };
 
+  const handleClearPrompt = () => {
+    setPrompt("");
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -104,23 +108,33 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
               What events would you like to create?
             </Label>
             <div className="flex gap-2">
-              <Input
-                id="prompt"
-                placeholder="E.g., Generate events for a week-long family vacation"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                required
-                className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200"
-                onFocus={() => {
-                  // Add a small delay to ensure the input is in view after keyboard appears
-                  setTimeout(() => {
-                    document.getElementById('prompt')?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'center'
-                    });
-                  }, 300);
-                }}
-              />
+              <div className="relative flex-1">
+                <Input
+                  id="prompt"
+                  placeholder="E.g., Generate events for a week-long family vacation"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  required
+                  className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200 pr-8"
+                  onFocus={() => {
+                    setTimeout(() => {
+                      document.getElementById('prompt')?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                      });
+                    }, 300);
+                  }}
+                />
+                {prompt && (
+                  <button
+                    type="button"
+                    onClick={handleClearPrompt}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[#D8DDE5] text-[#6B7280] transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
               <MicrophoneButton
                 isListening={isListening}
                 setIsListening={setIsListening}
