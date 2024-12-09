@@ -11,6 +11,7 @@ import { Wand2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AIEventsForm } from "./AIEventsForm";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AIEventsDialogProps {
   onAddEvent: (event: any) => void;
@@ -22,6 +23,7 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
   const [isListening, setIsListening] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleGenerateEvents = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +93,16 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent 
-        className="w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] border-none p-6 fixed bottom-0 left-[50%] translate-x-[-50%] translate-y-0 sm:translate-y-[-50%] sm:bottom-[unset] sm:top-[50%] max-h-[80vh] overflow-y-auto"
+        className={`
+          w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] 
+          shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] 
+          border-none p-6 
+          ${isMobile ? 
+            'fixed bottom-0 left-[50%] translate-x-[-50%] translate-y-0 rounded-t-3xl rounded-b-none' : 
+            'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]'
+          }
+          max-h-[80vh] overflow-y-auto
+        `}
       >
         <DialogHeader>
           <DialogTitle className="text-[#374151] text-xl font-semibold">Generate Events with AI</DialogTitle>

@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { MicrophoneButton } from "../MicrophoneButton";
+import { useEffect, useRef } from "react";
 
 interface AIEventsFormProps {
   prompt: string;
@@ -22,9 +22,25 @@ export function AIEventsForm({
   isLoading,
   onSubmit
 }: AIEventsFormProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleClearPrompt = () => {
     setPrompt("");
+    inputRef.current?.focus();
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <form onSubmit={onSubmit} className="space-y-5 mt-4">
@@ -35,20 +51,13 @@ export function AIEventsForm({
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
+              ref={inputRef}
               id="prompt"
               placeholder="E.g., Generate events for a week-long family vacation"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               required
               className="flex-1 rounded-xl bg-[#E8ECF4] border-none shadow-[inset_4px_4px_8px_rgba(163,177,198,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.8)] focus:shadow-[inset_6px_6px_10px_rgba(163,177,198,0.6),inset_-6px_-6px_10px_rgba(255,255,255,0.8)] transition-all duration-200 pr-8"
-              onFocus={() => {
-                setTimeout(() => {
-                  document.getElementById('prompt')?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                  });
-                }, 300);
-              }}
             />
             {prompt && (
               <button
