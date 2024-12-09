@@ -21,55 +21,56 @@ export function AddMemberDialog({ open, onOpenChange }: AddMemberDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!familyData.familyId) {
-      toast({
-        title: "Error",
-        description: "No family found. Please try again later.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (fullName.length > 12) {
-      toast({
-        title: "Error",
-        description: "Full name must be 12 characters or less",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
+
     try {
-      // First create a new user profile
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // If no family exists, create one first
+      let familyId = familyData?.familyId;
+      if (!familyId) {
+        const { data: newFamily, error: familyError } = await supabase
+          .from('families')
+          .insert([{ family_name: 'My Family' }])
+          .select('id')
+          .single();
+
+        if (familyError) throw familyError;
+        familyId = newFamily.id;
+
+        // Create family member entry for the current user
+        const { error: memberError } = await supabase
+          .from('family_members')
+          .insert([{
+            family_id: familyId,
+            user_id: user.id
+          }]);
+
+        if (memberError) throw memberError;
+      }
+
+      // Create profile for the new member
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
+        .insert([{
           full_name: fullName,
           nickname: nickname || fullName.substring(0, Math.min(fullName.length, 6))
-        })
+        }])
         .select('id')
         .single();
 
-      if (profileError) {
-        throw new Error('Failed to create profile');
-      }
+      if (profileError) throw profileError;
 
-      // Add the user to the family
+      // Add the new member to the family
       const { error: memberError } = await supabase
         .from('family_members')
-        .insert({
-          family_id: familyData.familyId,
+        .insert([{
+          family_id: familyId,
           user_id: profileData.id
-        });
+        }]);
 
-      if (memberError) {
-        throw memberError;
-      }
+      if (memberError) throw memberError;
 
       toast({
         title: "Success",

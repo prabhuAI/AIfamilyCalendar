@@ -33,6 +33,12 @@ const Index = () => {
           return;
         }
 
+        // Show welcome toast
+        toast({
+          title: "Welcome back!",
+          duration: 2000, // 2 seconds
+        });
+
         // Verify the user exists
         const { data: user, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
@@ -47,7 +53,7 @@ const Index = () => {
     };
 
     checkSession();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleAuthError = async (error: any) => {
     console.log("Handling auth error:", error);
