@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,18 +15,40 @@ const Index = () => {
   const { todayEvents, upcomingEvents, pastEvents, addEvent, deleteEvent } = useEvents();
   const { notifications, markAsRead } = useNotifications();
 
+  // Check session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        console.log("No active session found:", error?.message);
+        navigate('/login');
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error.message);
+        toast({
+          title: "Error",
+          description: "Failed to log out. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
       navigate('/login');
       toast({
         title: "Logged out successfully",
         description: "You have been logged out of your account.",
       });
     } catch (error: any) {
+      console.error("Unexpected error during logout:", error);
       toast({
         title: "Error",
-        description: "Failed to log out. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     }
