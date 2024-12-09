@@ -14,6 +14,7 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
 
   const startListening = async () => {
     const SpeechRecognition = getSpeechRecognition();
+    console.log("Starting speech recognition...");
 
     if (!SpeechRecognition) {
       toast({
@@ -26,6 +27,7 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
 
     // Check for iOS device
     if (isIOSDevice()) {
+      console.log("iOS device detected");
       const hasPermission = await checkMicrophonePermission();
       if (!hasPermission) {
         toast({
@@ -43,7 +45,16 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
+      // Add specific iOS settings
+      if (isIOSDevice()) {
+        // @ts-ignore - iOS specific property
+        recognition.interimResults = true;
+        // @ts-ignore - iOS specific property
+        recognition.maxAlternatives = 1;
+      }
+
       recognition.onstart = () => {
+        console.log("Speech recognition started");
         setIsListening(true);
         toast({
           title: "Listening",
@@ -52,7 +63,9 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
       };
 
       recognition.onresult = (event: any) => {
+        console.log("Speech recognition result received", event);
         const transcript = event.results[0][0].transcript;
+        console.log("Transcript:", transcript);
         onTranscript(transcript);
         setIsListening(false);
         toast({
@@ -77,7 +90,16 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
               : "Microphone permission was denied.";
             break;
           case 'no-speech':
-            errorMessage += "No speech was detected.";
+            errorMessage += "No speech was detected. Please try speaking again.";
+            break;
+          case 'aborted':
+            errorMessage += "Speech recognition was aborted. Please try again.";
+            break;
+          case 'audio-capture':
+            errorMessage += "No microphone was found. Please ensure your device has a working microphone.";
+            break;
+          case 'service-not-allowed':
+            errorMessage += "Speech recognition service is not allowed. Please try again.";
             break;
           default:
             errorMessage += "Please try again.";
@@ -91,6 +113,7 @@ export function MicrophoneButton({ isListening, setIsListening, onTranscript }: 
       };
 
       recognition.onend = () => {
+        console.log("Speech recognition ended");
         setIsListening(false);
       };
 
