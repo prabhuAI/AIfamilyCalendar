@@ -86,7 +86,7 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
       <DialogTrigger asChild>
         <Button 
           variant="outline"
-          className="w-full mt-4 bg-[#E8ECF4] hover:bg-[#D8DDE5] text-[#6B7280] shadow-[4px_4px_10px_rgba(163,177,198,0.6),-4px_-4px_10px_rgba(255,255,255,0.8)] rounded-2xl px-6 py-3 font-medium transition-all duration-200 hover:shadow-[2px_2px_5px_rgba(163,177,198,0.6),-2px_-2px_5px_rgba(255,255,255,0.8)]"
+          className="w-full bg-white/80 backdrop-blur-sm hover:bg-white/90 text-[#4169E1] shadow-lg rounded-[24px] px-6 py-3 font-medium transition-all duration-200 border border-white/20"
         >
           <Wand2 className="h-5 w-5 mr-2" />
           Add Events with AI
@@ -94,23 +94,18 @@ export function AIEventsDialog({ onAddEvent }: AIEventsDialogProps) {
       </DialogTrigger>
       <DialogContent 
         className={`
-          w-[95%] max-w-[425px] rounded-3xl bg-[#E8ECF4] 
-          shadow-[8px_8px_16px_rgba(163,177,198,0.6),-8px_-8px_16px_rgba(255,255,255,0.8)] 
-          border-none p-6 
+          w-[95%] max-w-[425px] rounded-[24px] bg-white/90 backdrop-blur-sm
+          shadow-lg border border-white/20 p-6 
           ${isMobile ? 
-            'fixed top-0 left-[50%] translate-x-[-50%] translate-y-0 rounded-b-3xl rounded-t-none' : 
+            'fixed bottom-0 left-[50%] translate-x-[-50%] translate-y-0 rounded-b-none' : 
             'fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]'
           }
           max-h-[80vh] overflow-y-auto
           transition-all duration-300
         `}
-        style={{
-          transform: isMobile ? 'translate(-50%, 0)' : 'translate(-50%, -50%)',
-          WebkitTransform: isMobile ? 'translate(-50%, 0)' : 'translate(-50%, -50%)',
-        }}
       >
         <DialogHeader>
-          <DialogTitle className="text-[#374151] text-xl font-semibold">Generate Events with AI</DialogTitle>
+          <DialogTitle className="text-[#4169E1] text-xl font-semibold">Generate Events with AI</DialogTitle>
         </DialogHeader>
         <AIEventsForm
           prompt={prompt}

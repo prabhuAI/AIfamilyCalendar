@@ -42,6 +42,6 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-[#accbee] to-[#e7f0fd] min-h-screen text-foreground;
+    @apply bg-gradient-to-br from-[#E8ECF4] to-[#F8F9FB] min-h-screen text-foreground;
   }
 }

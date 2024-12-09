@@ -111,8 +111,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#accbee] to-[#e7f0fd] py-6">
-      <div className="container mx-auto px-4 max-w-3xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#E8ECF4] to-[#F8F9FB] py-4 md:py-6">
+      <div className="container mx-auto px-4 max-w-3xl space-y-4 md:space-y-6">
         <Header 
           onLogout={handleLogout}
           notifications={notifications}

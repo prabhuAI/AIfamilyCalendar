@@ -27,12 +27,12 @@ export function EventSections({
   onDelete,
   onAddEvent,
 }: EventSectionsProps) {
-  const [isTodayOpen, setIsTodayOpen] = useState(false);
+  const [isTodayOpen, setIsTodayOpen] = useState(true);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       {/* AI Events Button */}
-      <div className="mb-2">
+      <div className="mb-4">
         <AIEventsDialog onAddEvent={onAddEvent} />
       </div>
 
